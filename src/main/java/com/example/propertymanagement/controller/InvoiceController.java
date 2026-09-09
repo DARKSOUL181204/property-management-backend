@@ -1,14 +1,13 @@
 package com.example.propertymanagement.controller;
 
-import com.example.propertymanagement.model.Invoice;
-import com.example.propertymanagement.repository.InvoiceRepository;
+import com.example.propertymanagement.dto.InvoiceDto;
+import com.example.propertymanagement.service.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -16,42 +15,31 @@ import java.util.UUID;
 public class InvoiceController {
 
     @Autowired
-    private InvoiceRepository invoiceRepository;
+    private InvoiceService invoiceService;
 
     @GetMapping
-    public List<Invoice> getAll() {
-        return invoiceRepository.findAll();
+    public ResponseEntity<List<InvoiceDto>> getAll() {
+        return ResponseEntity.ok(invoiceService.getAllInvoices());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Invoice> getById(@PathVariable UUID id) {
-        Optional<Invoice> entity = invoiceRepository.findById(id);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<InvoiceDto> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(invoiceService.getInvoiceById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Invoice> create(@RequestBody Invoice invoice) {
-        Invoice savedEntity = invoiceRepository.save(invoice);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedEntity);
+    public ResponseEntity<InvoiceDto> create(@RequestBody InvoiceDto invoiceDto) {
+        return new ResponseEntity<>(invoiceService.createInvoice(invoiceDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Invoice> update(@PathVariable UUID id, @RequestBody Invoice invoice) {
-        if (!invoiceRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        // Depending on your entity definitions, you may need a setId() here. 
-        // For standard Spring Data JPA, assuming the body contains the correct id or merging works.
-        Invoice updatedEntity = invoiceRepository.save(invoice);
-        return ResponseEntity.ok(updatedEntity);
+    public ResponseEntity<InvoiceDto> update(@PathVariable UUID id, @RequestBody InvoiceDto invoiceDto) {
+        return ResponseEntity.ok(invoiceService.updateInvoice(id, invoiceDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!invoiceRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        invoiceRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> delete(@PathVariable UUID id) {
+        invoiceService.deleteInvoice(id);
+        return ResponseEntity.ok("Invoice deleted successfully.");
     }
 }

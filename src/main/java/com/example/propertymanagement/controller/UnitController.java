@@ -1,14 +1,13 @@
 package com.example.propertymanagement.controller;
 
-import com.example.propertymanagement.model.Unit;
-import com.example.propertymanagement.repository.UnitRepository;
+import com.example.propertymanagement.dto.UnitDto;
+import com.example.propertymanagement.service.UnitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -16,42 +15,31 @@ import java.util.UUID;
 public class UnitController {
 
     @Autowired
-    private UnitRepository unitRepository;
+    private UnitService unitService;
 
     @GetMapping
-    public List<Unit> getAll() {
-        return unitRepository.findAll();
+    public ResponseEntity<List<UnitDto>> getAll() {
+        return ResponseEntity.ok(unitService.getAllUnits());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Unit> getById(@PathVariable UUID id) {
-        Optional<Unit> entity = unitRepository.findById(id);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<UnitDto> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(unitService.getUnitById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Unit> create(@RequestBody Unit unit) {
-        Unit savedEntity = unitRepository.save(unit);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedEntity);
+    public ResponseEntity<UnitDto> create(@RequestBody UnitDto unitDto) {
+        return new ResponseEntity<>(unitService.createUnit(unitDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Unit> update(@PathVariable UUID id, @RequestBody Unit unit) {
-        if (!unitRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        // Depending on your entity definitions, you may need a setId() here. 
-        // For standard Spring Data JPA, assuming the body contains the correct id or merging works.
-        Unit updatedEntity = unitRepository.save(unit);
-        return ResponseEntity.ok(updatedEntity);
+    public ResponseEntity<UnitDto> update(@PathVariable UUID id, @RequestBody UnitDto unitDto) {
+        return ResponseEntity.ok(unitService.updateUnit(id, unitDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!unitRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        unitRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> delete(@PathVariable UUID id) {
+        unitService.deleteUnit(id);
+        return ResponseEntity.ok("Unit deleted successfully.");
     }
 }

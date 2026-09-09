@@ -1,14 +1,13 @@
 package com.example.propertymanagement.controller;
 
-import com.example.propertymanagement.model.PublicListing;
-import com.example.propertymanagement.repository.PublicListingRepository;
+import com.example.propertymanagement.dto.PublicListingDto;
+import com.example.propertymanagement.service.PublicListingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -16,42 +15,31 @@ import java.util.UUID;
 public class PublicListingController {
 
     @Autowired
-    private PublicListingRepository publicListingRepository;
+    private PublicListingService publicListingService;
 
     @GetMapping
-    public List<PublicListing> getAll() {
-        return publicListingRepository.findAll();
+    public ResponseEntity<List<PublicListingDto>> getAll() {
+        return ResponseEntity.ok(publicListingService.getAllPublicListings());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PublicListing> getById(@PathVariable UUID id) {
-        Optional<PublicListing> entity = publicListingRepository.findById(id);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<PublicListingDto> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(publicListingService.getPublicListingById(id));
     }
 
     @PostMapping
-    public ResponseEntity<PublicListing> create(@RequestBody PublicListing publicListing) {
-        PublicListing savedEntity = publicListingRepository.save(publicListing);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedEntity);
+    public ResponseEntity<PublicListingDto> create(@RequestBody PublicListingDto publicListingDto) {
+        return new ResponseEntity<>(publicListingService.createPublicListing(publicListingDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PublicListing> update(@PathVariable UUID id, @RequestBody PublicListing publicListing) {
-        if (!publicListingRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        // Depending on your entity definitions, you may need a setId() here. 
-        // For standard Spring Data JPA, assuming the body contains the correct id or merging works.
-        PublicListing updatedEntity = publicListingRepository.save(publicListing);
-        return ResponseEntity.ok(updatedEntity);
+    public ResponseEntity<PublicListingDto> update(@PathVariable UUID id, @RequestBody PublicListingDto publicListingDto) {
+        return ResponseEntity.ok(publicListingService.updatePublicListing(id, publicListingDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!publicListingRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        publicListingRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> delete(@PathVariable UUID id) {
+        publicListingService.deletePublicListing(id);
+        return ResponseEntity.ok("PublicListing deleted successfully.");
     }
 }

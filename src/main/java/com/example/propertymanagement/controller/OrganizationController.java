@@ -1,14 +1,13 @@
 package com.example.propertymanagement.controller;
 
-import com.example.propertymanagement.model.Organization;
-import com.example.propertymanagement.repository.OrganizationRepository;
+import com.example.propertymanagement.dto.OrganizationDto;
+import com.example.propertymanagement.service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -16,42 +15,31 @@ import java.util.UUID;
 public class OrganizationController {
 
     @Autowired
-    private OrganizationRepository organizationRepository;
+    private OrganizationService organizationService;
 
     @GetMapping
-    public List<Organization> getAll() {
-        return organizationRepository.findAll();
+    public ResponseEntity<List<OrganizationDto>> getAll() {
+        return ResponseEntity.ok(organizationService.getAllOrganizations());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Organization> getById(@PathVariable UUID id) {
-        Optional<Organization> entity = organizationRepository.findById(id);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<OrganizationDto> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(organizationService.getOrganizationById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Organization> create(@RequestBody Organization organization) {
-        Organization savedEntity = organizationRepository.save(organization);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedEntity);
+    public ResponseEntity<OrganizationDto> create(@RequestBody OrganizationDto organizationDto) {
+        return new ResponseEntity<>(organizationService.createOrganization(organizationDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Organization> update(@PathVariable UUID id, @RequestBody Organization organization) {
-        if (!organizationRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        // Depending on your entity definitions, you may need a setId() here. 
-        // For standard Spring Data JPA, assuming the body contains the correct id or merging works.
-        Organization updatedEntity = organizationRepository.save(organization);
-        return ResponseEntity.ok(updatedEntity);
+    public ResponseEntity<OrganizationDto> update(@PathVariable UUID id, @RequestBody OrganizationDto organizationDto) {
+        return ResponseEntity.ok(organizationService.updateOrganization(id, organizationDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!organizationRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        organizationRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> delete(@PathVariable UUID id) {
+        organizationService.deleteOrganization(id);
+        return ResponseEntity.ok("Organization deleted successfully.");
     }
 }

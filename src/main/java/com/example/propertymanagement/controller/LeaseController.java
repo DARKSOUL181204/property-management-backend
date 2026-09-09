@@ -1,14 +1,13 @@
 package com.example.propertymanagement.controller;
 
-import com.example.propertymanagement.model.Lease;
-import com.example.propertymanagement.repository.LeaseRepository;
+import com.example.propertymanagement.dto.LeaseDto;
+import com.example.propertymanagement.service.LeaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -16,42 +15,31 @@ import java.util.UUID;
 public class LeaseController {
 
     @Autowired
-    private LeaseRepository leaseRepository;
+    private LeaseService leaseService;
 
     @GetMapping
-    public List<Lease> getAll() {
-        return leaseRepository.findAll();
+    public ResponseEntity<List<LeaseDto>> getAll() {
+        return ResponseEntity.ok(leaseService.getAllLeases());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Lease> getById(@PathVariable UUID id) {
-        Optional<Lease> entity = leaseRepository.findById(id);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<LeaseDto> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(leaseService.getLeaseById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Lease> create(@RequestBody Lease lease) {
-        Lease savedEntity = leaseRepository.save(lease);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedEntity);
+    public ResponseEntity<LeaseDto> create(@RequestBody LeaseDto leaseDto) {
+        return new ResponseEntity<>(leaseService.createLease(leaseDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Lease> update(@PathVariable UUID id, @RequestBody Lease lease) {
-        if (!leaseRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        // Depending on your entity definitions, you may need a setId() here. 
-        // For standard Spring Data JPA, assuming the body contains the correct id or merging works.
-        Lease updatedEntity = leaseRepository.save(lease);
-        return ResponseEntity.ok(updatedEntity);
+    public ResponseEntity<LeaseDto> update(@PathVariable UUID id, @RequestBody LeaseDto leaseDto) {
+        return ResponseEntity.ok(leaseService.updateLease(id, leaseDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!leaseRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        leaseRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> delete(@PathVariable UUID id) {
+        leaseService.deleteLease(id);
+        return ResponseEntity.ok("Lease deleted successfully.");
     }
 }

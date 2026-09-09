@@ -1,14 +1,13 @@
 package com.example.propertymanagement.controller;
 
-import com.example.propertymanagement.model.Property;
-import com.example.propertymanagement.repository.PropertyRepository;
+import com.example.propertymanagement.dto.PropertyDto;
+import com.example.propertymanagement.service.PropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -16,42 +15,31 @@ import java.util.UUID;
 public class PropertyController {
 
     @Autowired
-    private PropertyRepository propertyRepository;
+    private PropertyService propertyService;
 
     @GetMapping
-    public List<Property> getAll() {
-        return propertyRepository.findAll();
+    public ResponseEntity<List<PropertyDto>> getAll() {
+        return ResponseEntity.ok(propertyService.getAllPropertys());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Property> getById(@PathVariable UUID id) {
-        Optional<Property> entity = propertyRepository.findById(id);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<PropertyDto> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(propertyService.getPropertyById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Property> create(@RequestBody Property property) {
-        Property savedEntity = propertyRepository.save(property);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedEntity);
+    public ResponseEntity<PropertyDto> create(@RequestBody PropertyDto propertyDto) {
+        return new ResponseEntity<>(propertyService.createProperty(propertyDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Property> update(@PathVariable UUID id, @RequestBody Property property) {
-        if (!propertyRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        // Depending on your entity definitions, you may need a setId() here. 
-        // For standard Spring Data JPA, assuming the body contains the correct id or merging works.
-        Property updatedEntity = propertyRepository.save(property);
-        return ResponseEntity.ok(updatedEntity);
+    public ResponseEntity<PropertyDto> update(@PathVariable UUID id, @RequestBody PropertyDto propertyDto) {
+        return ResponseEntity.ok(propertyService.updateProperty(id, propertyDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!propertyRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        propertyRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> delete(@PathVariable UUID id) {
+        propertyService.deleteProperty(id);
+        return ResponseEntity.ok("Property deleted successfully.");
     }
 }

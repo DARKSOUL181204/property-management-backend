@@ -1,14 +1,13 @@
 package com.example.propertymanagement.controller;
 
-import com.example.propertymanagement.model.Payment;
-import com.example.propertymanagement.repository.PaymentRepository;
+import com.example.propertymanagement.dto.PaymentDto;
+import com.example.propertymanagement.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -16,42 +15,31 @@ import java.util.UUID;
 public class PaymentController {
 
     @Autowired
-    private PaymentRepository paymentRepository;
+    private PaymentService paymentService;
 
     @GetMapping
-    public List<Payment> getAll() {
-        return paymentRepository.findAll();
+    public ResponseEntity<List<PaymentDto>> getAll() {
+        return ResponseEntity.ok(paymentService.getAllPayments());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Payment> getById(@PathVariable UUID id) {
-        Optional<Payment> entity = paymentRepository.findById(id);
-        return entity.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<PaymentDto> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(paymentService.getPaymentById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Payment> create(@RequestBody Payment payment) {
-        Payment savedEntity = paymentRepository.save(payment);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedEntity);
+    public ResponseEntity<PaymentDto> create(@RequestBody PaymentDto paymentDto) {
+        return new ResponseEntity<>(paymentService.createPayment(paymentDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Payment> update(@PathVariable UUID id, @RequestBody Payment payment) {
-        if (!paymentRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        // Depending on your entity definitions, you may need a setId() here. 
-        // For standard Spring Data JPA, assuming the body contains the correct id or merging works.
-        Payment updatedEntity = paymentRepository.save(payment);
-        return ResponseEntity.ok(updatedEntity);
+    public ResponseEntity<PaymentDto> update(@PathVariable UUID id, @RequestBody PaymentDto paymentDto) {
+        return ResponseEntity.ok(paymentService.updatePayment(id, paymentDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!paymentRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        paymentRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> delete(@PathVariable UUID id) {
+        paymentService.deletePayment(id);
+        return ResponseEntity.ok("Payment deleted successfully.");
     }
 }
