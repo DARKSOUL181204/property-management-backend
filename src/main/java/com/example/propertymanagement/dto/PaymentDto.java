@@ -1,11 +1,14 @@
 package com.example.propertymanagement.dto;
-
 import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
 public class PaymentDto {
-    private UUID id;
-    // Basic mapping, we'll use ModelMapper to handle the rest automatically
-    // It's recommended to explicitly list fields here to avoid exposing internal entity structure completely
+    private UUID paymentId;
+    private BigDecimal amount;
+    private LocalDate paymentDate;
+    private String paymentMethod;
+    private UUID invoiceInvoiceId;
 }
