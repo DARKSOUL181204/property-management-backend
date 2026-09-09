@@ -1,12 +1,16 @@
 package com.example.propertymanagement.service.impl;
 
-import com.example.propertymanagement.dto.UserDto;
 import com.example.propertymanagement.exception.ResourceNotFoundException;
 import com.example.propertymanagement.model.User;
+import com.example.propertymanagement.model.Organization;
 import com.example.propertymanagement.repository.UserRepository;
+import com.example.propertymanagement.repository.OrganizationRepository;
 import com.example.propertymanagement.service.UserService;
+import com.example.propertymanagement.payload.request.CreateUserRequest;
+import com.example.propertymanagement.payload.response.UserResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,45 +22,72 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private OrganizationRepository organizationRepository;
 
     @Autowired
     private ModelMapper modelMapper;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDto createUser(UserDto userDto) {
-        User user = modelMapper.map(userDto, User.class);
+    public UserResponse createUser(CreateUserRequest request) {
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+        user.setStatus(request.getStatus());
+        
+        if (request.getOrganizationId() != null) {
+            Organization org = organizationRepository.findById(request.getOrganizationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", request.getOrganizationId()));
+            user.setOrganization(org);
+        }
+
         User savedUser = userRepository.save(user);
-        return modelMapper.map(savedUser, UserDto.class);
+        return modelMapper.map(savedUser, UserResponse.class);
     }
 
     @Override
-    public List<UserDto> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream().map(user -> modelMapper.map(user, UserDto.class))
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> modelMapper.map(user, UserResponse.class))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public UserDto getUserById(UUID id) {
+    public UserResponse getUserById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("User", "id", id)
         );
-        return modelMapper.map(user, UserDto.class);
+        return modelMapper.map(user, UserResponse.class);
     }
 
     @Override
-    public UserDto updateUser(UUID id, UserDto userDto) {
+    public UserResponse updateUser(UUID id, CreateUserRequest request) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("User", "id", id)
         );
         
-        // ModelMapper can be tricky with updates, but we'll map DTO to Entity for simplicity
-        modelMapper.map(userDto, user);
-        // We ensure ID is preserved
-        // Note: For full robustness, individual fields should be set
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        if(request.getPassword() != null && !request.getPassword().isEmpty()){
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        user.setRole(request.getRole());
+        user.setStatus(request.getStatus());
+        
+        if (request.getOrganizationId() != null) {
+            Organization org = organizationRepository.findById(request.getOrganizationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", request.getOrganizationId()));
+            user.setOrganization(org);
+        }
         
         User updatedUser = userRepository.save(user);
-        return modelMapper.map(updatedUser, UserDto.class);
+        return modelMapper.map(updatedUser, UserResponse.class);
     }
 
     @Override
