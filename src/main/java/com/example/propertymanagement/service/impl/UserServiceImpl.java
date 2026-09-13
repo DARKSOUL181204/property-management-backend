@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(user -> modelMapper.map(user, UserResponse.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

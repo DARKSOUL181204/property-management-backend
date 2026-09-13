@@ -33,7 +33,7 @@ public class LeaseServiceImpl implements LeaseService {
     public List<LeaseDto> getAllLeases() {
         List<Lease> leases = leaseRepository.findAll();
         return leases.stream().map(lease -> modelMapper.map(lease, LeaseDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

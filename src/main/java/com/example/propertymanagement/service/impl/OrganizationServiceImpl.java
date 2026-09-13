@@ -33,7 +33,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public List<OrganizationDto> getAllOrganizations() {
         List<Organization> organizations = organizationRepository.findAll();
         return organizations.stream().map(organization -> modelMapper.map(organization, OrganizationDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

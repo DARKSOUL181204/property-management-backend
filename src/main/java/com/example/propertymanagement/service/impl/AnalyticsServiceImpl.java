@@ -50,11 +50,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         List<Unit> units = unitRepository.findByPropertyPropertyId(propertyId);
         List<Lease> leases = units.stream()
                 .flatMap(u -> leaseRepository.findAll().stream().filter(l -> l.getUnit() != null && l.getUnit().getUnitId().equals(u.getUnitId())))
-                .collect(Collectors.toList());
+                .toList();
         
         List<Invoice> invoices = leases.stream()
                 .flatMap(l -> invoiceRepository.findAll().stream().filter(i -> i.getLease() != null && i.getLease().getLeaseId().equals(l.getLeaseId())))
-                .collect(Collectors.toList());
+                .toList();
 
         BigDecimal expected = invoices.stream().map(Invoice::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         

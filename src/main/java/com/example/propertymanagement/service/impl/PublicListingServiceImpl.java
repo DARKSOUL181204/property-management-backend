@@ -33,7 +33,7 @@ public class PublicListingServiceImpl implements PublicListingService {
     public List<PublicListingDto> getAllPublicListings() {
         List<PublicListing> publicListings = publicListingRepository.findAll();
         return publicListings.stream().map(publicListing -> modelMapper.map(publicListing, PublicListingDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

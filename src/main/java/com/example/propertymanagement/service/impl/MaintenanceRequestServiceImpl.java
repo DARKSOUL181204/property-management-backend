@@ -33,7 +33,7 @@ public class MaintenanceRequestServiceImpl implements MaintenanceRequestService 
     public List<MaintenanceRequestDto> getAllMaintenanceRequests() {
         List<MaintenanceRequest> maintenanceRequests = maintenanceRequestRepository.findAll();
         return maintenanceRequests.stream().map(maintenanceRequest -> modelMapper.map(maintenanceRequest, MaintenanceRequestDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

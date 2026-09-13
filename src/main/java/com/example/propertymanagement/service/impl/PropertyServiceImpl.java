@@ -33,7 +33,7 @@ public class PropertyServiceImpl implements PropertyService {
     public List<PropertyDto> getAllPropertys() {
         List<Property> propertys = propertyRepository.findAll();
         return propertys.stream().map(property -> modelMapper.map(property, PropertyDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

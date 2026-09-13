@@ -33,7 +33,7 @@ public class PaymentServiceImpl implements PaymentService {
     public List<PaymentDto> getAllPayments() {
         List<Payment> payments = paymentRepository.findAll();
         return payments.stream().map(payment -> modelMapper.map(payment, PaymentDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

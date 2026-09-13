@@ -33,7 +33,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<InvoiceDto> getAllInvoices() {
         List<Invoice> invoices = invoiceRepository.findAll();
         return invoices.stream().map(invoice -> modelMapper.map(invoice, InvoiceDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

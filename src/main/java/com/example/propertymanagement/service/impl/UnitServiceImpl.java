@@ -33,7 +33,7 @@ public class UnitServiceImpl implements UnitService {
     public List<UnitDto> getAllUnits() {
         List<Unit> units = unitRepository.findAll();
         return units.stream().map(unit -> modelMapper.map(unit, UnitDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

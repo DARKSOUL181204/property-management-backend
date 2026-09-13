@@ -33,7 +33,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     public List<ExpenseDto> getAllExpenses() {
         List<Expense> expenses = expenseRepository.findAll();
         return expenses.stream().map(expense -> modelMapper.map(expense, ExpenseDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

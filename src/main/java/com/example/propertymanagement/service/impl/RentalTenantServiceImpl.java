@@ -33,7 +33,7 @@ public class RentalTenantServiceImpl implements RentalTenantService {
     public List<RentalTenantDto> getAllRentalTenants() {
         List<RentalTenant> rentalTenants = rentalTenantRepository.findAll();
         return rentalTenants.stream().map(rentalTenant -> modelMapper.map(rentalTenant, RentalTenantDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

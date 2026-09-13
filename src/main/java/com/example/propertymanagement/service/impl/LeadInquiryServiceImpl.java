@@ -33,7 +33,7 @@ public class LeadInquiryServiceImpl implements LeadInquiryService {
     public List<LeadInquiryDto> getAllLeadInquirys() {
         List<LeadInquiry> leadInquirys = leadInquiryRepository.findAll();
         return leadInquirys.stream().map(leadInquiry -> modelMapper.map(leadInquiry, LeadInquiryDto.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
