@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, UUID> {
+    java.util.List<com.example.propertymanagement.model.Expense> findByPropertyPropertyId(java.util.UUID propertyId);
 }

@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface MaintenanceRequestRepository extends JpaRepository<MaintenanceRequest, UUID> {
+    java.util.List<com.example.propertymanagement.model.MaintenanceRequest> findByPropertyPropertyId(java.util.UUID propertyId);
 }

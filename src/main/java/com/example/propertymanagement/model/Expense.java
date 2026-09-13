@@ -34,3 +34,4 @@ public class Expense {
     @JoinColumn(name = "property_id")
     private Property property;
 }
+
