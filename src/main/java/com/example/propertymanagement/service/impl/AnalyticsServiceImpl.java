@@ -99,12 +99,16 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     public ExpenseAnalysisResponse getExpenseAnalysis(UUID propertyId) {
         List<Expense> expenses = expenseRepository.findByPropertyPropertyId(propertyId);
         
-        BigDecimal total = expenses.stream().map(Expense::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         Map<String, BigDecimal> byCategory = expenses.stream()
                 .collect(Collectors.groupingBy(
                         Expense::getCategory,
                         Collectors.mapping(Expense::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
                 ));
+        
+        // Ensure no category drops below zero
+        byCategory.replaceAll((k, v) -> v.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : v);
+        
+        BigDecimal total = byCategory.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
         ExpenseAnalysisResponse response = new ExpenseAnalysisResponse();
         response.setPropertyId(propertyId);

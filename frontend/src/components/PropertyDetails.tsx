@@ -151,7 +151,7 @@ export default function PropertyDetails() {
                 </div>
                 <div>
                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">Amount (₹)</label>
-                   <input required type="number" step="0.01" value={expenseData.amount} onChange={e => setExpenseData({...expenseData, amount: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                   <input required type="number" step="0.01" min="0" value={expenseData.amount} onChange={e => setExpenseData({...expenseData, amount: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
                    <label className="block text-sm font-medium mb-1 dark:text-gray-300">Date</label>
