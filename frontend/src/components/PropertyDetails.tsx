@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api';
-import { MapPin, Bed, Bath, ArrowLeft, Download, Phone, ShieldCheck, Edit3, X, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Bed, Bath, ArrowLeft, Download, Phone, ShieldCheck, Edit3, X, Image as ImageIcon, Plus, DollarSign, Calendar } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 
 export default function PropertyDetails() {
@@ -13,12 +13,18 @@ export default function PropertyDetails() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [editData, setEditData] = useState<any>({});
+
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [expenseData, setExpenseData] = useState({ amount: '', category: 'MAINTENANCE', expenseDate: new Date().toISOString().split('T')[0] });
+
   
   const focusRef = useRef<HTMLInputElement>(null);
   const imgFocusRef = useRef<HTMLInputElement>(null);
 
   const fetchProperty = () => {
     api.get(`/properties/${propertyId}`).then(res => setProperty(res.data)).catch(console.error);
+    api.get(`/expenses/property/${propertyId}`).then(res => setExpenses(res.data)).catch(console.error);
   };
 
   useEffect(() => {
@@ -60,6 +66,25 @@ export default function PropertyDetails() {
     }
   };
 
+  
+  const handleSaveExpense = async (e: any) => {
+    e.preventDefault();
+    try {
+      await api.post('/expenses', {
+         propertyPropertyId: propertyId,
+         organizationOrganizationId: property.organizationOrganizationId,
+         amount: parseFloat(expenseData.amount),
+         category: expenseData.category,
+         expenseDate: expenseData.expenseDate
+      });
+      setShowExpenseModal(false);
+      setExpenseData({ amount: '', category: 'MAINTENANCE', expenseDate: new Date().toISOString().split('T')[0] });
+      fetchProperty();
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
   const openEditModal = () => {
     setEditData({
        name: property.name,
@@ -91,6 +116,41 @@ export default function PropertyDetails() {
   return (
     <main className="max-w-6xl mx-auto">
       
+      
+      {/* EXPENSE MODAL */}
+      {showExpenseModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog">
+           <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-6 shadow-xl relative">
+             <button onClick={() => setShowExpenseModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition">
+               <X size={20} />
+             </button>
+             <h3 className="text-xl font-bold mb-4 dark:text-white">Add New Expense</h3>
+             <form onSubmit={handleSaveExpense} className="space-y-4">
+                <div>
+                   <label className="block text-sm font-medium mb-1 dark:text-gray-300">Category</label>
+                   <select value={expenseData.category} onChange={e => setExpenseData({...expenseData, category: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     <option value="MARKETING">Marketing</option>
+                     <option value="MAINTENANCE">Maintenance</option>
+                     <option value="UTILITY">Utility</option>
+                     <option value="TAXES">Taxes</option>
+                     <option value="LEGAL">Legal</option>
+                     <option value="OTHER">Other</option>
+                   </select>
+                </div>
+                <div>
+                   <label className="block text-sm font-medium mb-1 dark:text-gray-300">Amount (₹)</label>
+                   <input required type="number" step="0.01" value={expenseData.amount} onChange={e => setExpenseData({...expenseData, amount: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                   <label className="block text-sm font-medium mb-1 dark:text-gray-300">Date</label>
+                   <input required type="date" value={expenseData.expenseDate} onChange={e => setExpenseData({...expenseData, expenseDate: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition mt-4 focus:outline-none focus:ring-4 focus:ring-blue-500/50">Add Expense</button>
+             </form>
+           </div>
+        </div>
+      )}
+
       {/* EDIT DETAILS MODAL */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-property-title">
@@ -234,6 +294,46 @@ export default function PropertyDetails() {
               {property.description || "No description provided for this property."}
             </p>
           </article>
+
+        
+          {/* Expenses Section */}
+          <div className="mt-8 border-t border-gray-100 dark:border-gray-700 pt-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Property Expenses</h3>
+              <button onClick={() => setShowExpenseModal(true)} className="flex items-center text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition focus:outline-none focus:ring-4 focus:ring-blue-500/50">
+                <Plus size={16} className="mr-1"/> Add Expense
+              </button>
+            </div>
+            
+            {expenses.length === 0 ? (
+              <p className="text-gray-500 text-sm">No expenses recorded for this property yet.</p>
+            ) : (
+              <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Date</th>
+                      <th className="px-4 py-3 font-medium">Category</th>
+                      <th className="px-4 py-3 font-medium text-right">Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {expenses.map((e: any) => (
+                      <tr key={e.expenseId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{e.expenseDate}</td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-1 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                            {e.category}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">₹{e.amount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
 
         </section>
       </div>

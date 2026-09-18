@@ -66,4 +66,11 @@ public class ExpenseServiceImpl implements ExpenseService {
         );
         expenseRepository.delete(expense);
     }
+
+    @Override
+    public List<ExpenseDto> getExpensesByPropertyId(UUID propertyId) {
+        return expenseRepository.findByPropertyPropertyId(propertyId).stream()
+                .map(expense -> modelMapper.map(expense, ExpenseDto.class))
+                .collect(Collectors.toList());
+    }
 }
