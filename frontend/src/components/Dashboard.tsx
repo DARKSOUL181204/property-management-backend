@@ -4,7 +4,7 @@ import api from '../api';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import StatCard from './ui/StatCard';
-import { TrendingUp, Users, Wrench, Activity } from 'lucide-react';
+import { TrendingUp, Users, Wrench, Activity, Trash2 } from 'lucide-react';
 
 const COLORS = ['#10b981', '#ef4444', '#3b82f6', '#f59e0b'];
 
@@ -166,7 +166,12 @@ const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([
       </div>
 
       <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Adjust Expense Budgets</h3>
+         <div className="flex justify-between items-center mb-4">
+           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Adjust Expense Budgets</h3>
+           <button onClick={handleResetExpenses} className="flex items-center text-sm font-bold text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 hover:bg-red-100 transition focus:outline-none focus:ring-4 focus:ring-red-500/50">
+             <Trash2 size={16} className="mr-1"/> Reset All Expenses
+           </button>
+         </div>
          <form onSubmit={handleQuickLog} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
             <div>
                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Action</label>

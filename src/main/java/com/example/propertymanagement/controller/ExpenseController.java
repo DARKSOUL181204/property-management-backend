@@ -47,4 +47,10 @@ public class ExpenseController {
     public ResponseEntity<List<ExpenseDto>> getByPropertyId(@PathVariable UUID propertyId) {
         return ResponseEntity.ok(expenseService.getExpensesByPropertyId(propertyId));
     }
+
+    @DeleteMapping("/property/{propertyId}")
+    public ResponseEntity<String> deleteAllByPropertyId(@PathVariable UUID propertyId) {
+        expenseService.deleteAllExpensesByPropertyId(propertyId);
+        return ResponseEntity.ok("All expenses for property deleted successfully.");
+    }
 }
