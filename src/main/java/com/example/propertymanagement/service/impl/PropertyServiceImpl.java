@@ -10,6 +10,11 @@ import org.springframework.stereotype.Service;
 import com.example.propertymanagement.dto.PropertyDto;
 import com.example.propertymanagement.exception.ResourceNotFoundException;
 import com.example.propertymanagement.model.Property;
+import com.example.propertymanagement.model.User;
+import com.example.propertymanagement.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.Collections;
 import com.example.propertymanagement.repository.PropertyRepository;
 import com.example.propertymanagement.service.PropertyService;
 
@@ -18,6 +23,9 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -30,7 +38,23 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    public List<PropertyDto> getAllPropertys() {
+        public List<PropertyDto> getAllPropertys() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            if (user != null) {
+                if ("MANAGER".equals(user.getRole()) || "EMPLOYEE".equals(user.getRole())) {
+                    if (user.getOrganization() != null) {
+                        return propertyRepository.findAll().stream()
+                                .filter(p -> p.getOrganization() != null && p.getOrganization().getOrganizationId().equals(user.getOrganization().getOrganizationId()))
+                                .map(property -> modelMapper.map(property, PropertyDto.class))
+                                .toList();
+                    }
+                    return Collections.emptyList();
+                }
+            }
+        }
+        
         List<Property> propertys = propertyRepository.findAll();
         return propertys.stream().map(property -> modelMapper.map(property, PropertyDto.class))
                 .toList();
