@@ -141,12 +141,20 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         response.setMaintenance(getMaintenanceAnalysis(propertyId));
         
         double occupancy = response.getOccupancy().getOccupancyRate();
-        if (occupancy >= 90.0) {
+        double profitMargin = response.getProfitability().getProfitMargin();
+        int openIssues = response.getMaintenance().getOpenRequests();
+        
+        // Dynamic Health Score based on Occupancy, Profit Margin, and Maintenance
+        if (occupancy >= 80.0 && profitMargin >= 40.0 && openIssues <= 2) {
             response.setOverallHealthScore("EXCELLENT");
-        } else if (occupancy >= 70.0) {
+        } else if (occupancy >= 60.0 && profitMargin >= 20.0 && openIssues <= 5) {
             response.setOverallHealthScore("GOOD");
+        } else if (profitMargin > 5.0) {
+            response.setOverallHealthScore("MODERATE");
+        } else if (profitMargin <= 5.0 && profitMargin >= -10.0) {
+            response.setOverallHealthScore("POOR");
         } else {
-            response.setOverallHealthScore("NEEDS ATTENTION");
+            response.setOverallHealthScore("CRITICAL");
         }
         
         return response;

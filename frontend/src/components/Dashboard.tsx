@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [activePropertyId, setActivePropertyId] = useState(propertyId);
   const [newExpenseData, setNewExpenseData] = useState({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0], type: 'INCREASE' });
   const [isLogging, setIsLogging] = useState(false);
+  const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
     api.get('/properties').then(res => {
@@ -45,10 +46,15 @@ export default function Dashboard() {
          category: newExpenseData.category,
          expenseDate: newExpenseData.expenseDate
       });
-      // Refetch analytics
+            // Refetch analytics
       const res = await api.get(`/analytics/properties/${activePropertyId}/performance`);
       setAnalytics(res.data);
       setNewExpenseData({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0], type: 'INCREASE' });
+      
+      const newProfit = res.data.profitability.netProfit;
+      const newHealth = res.data.overallHealthScore;
+      setNotification(`Budget Adjusted! New Net Profit: ₹${newProfit.toLocaleString()}. Property condition is now ${newHealth}.`);
+      setTimeout(() => setNotification(null), 5000);
     } catch(err) {
       console.error(err);
     } finally {
@@ -155,6 +161,12 @@ export default function Dashboard() {
             </button>
          </form>
       </div>
+      {notification && (
+        <div className="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-bounce">
+          <Activity size={20} className="text-emerald-400" />
+          <span className="font-medium">{notification}</span>
+        </div>
+      )}
     </motion.div>
 
   );
