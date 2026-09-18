@@ -19,6 +19,8 @@ export default function Properties() {
     status: "ACTIVE",
     buildCost: 0,
   });
+  const [addError, setAddError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
   const navigate = useNavigate();
   const focusRef = useRef<HTMLInputElement>(null);
 
@@ -41,9 +43,12 @@ export default function Properties() {
 
   const handleAdd = async (e: any) => {
     e.preventDefault();
+    setAddError(null);
+    setIsAdding(true);
     try {
       await api.post("/properties", newProp);
       setShowAddModal(false);
+      setAddError(null);
       setNewProp({
         name: "",
         description: "",
@@ -55,8 +60,11 @@ export default function Properties() {
         buildCost: 0,
       });
       fetchProperties();
-    } catch (err) {
-      console.error("Failed to add property");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.response?.data || err?.message || "Failed to add property. Please try again.";
+      setAddError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -227,11 +235,17 @@ export default function Properties() {
                   />
                 </div>
               </div>
+              {addError && (
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-3 text-sm text-red-700 dark:text-red-300">
+                  ⚠️ {addError}
+                </div>
+              )}
               <button
                 type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition focus:outline-none focus:ring-4 focus:ring-emerald-500/50 shadow-sm mt-4"
+                disabled={isAdding}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold py-2.5 rounded-lg transition focus:outline-none focus:ring-4 focus:ring-emerald-500/50 shadow-sm mt-4"
               >
-                Save Property
+                {isAdding ? "Saving..." : "Save Property"}
               </button>
             </form>
           </div>
