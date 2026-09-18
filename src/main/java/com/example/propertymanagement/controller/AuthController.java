@@ -1,9 +1,11 @@
 package com.example.propertymanagement.controller;
 
+import com.example.propertymanagement.model.Organization;
 import com.example.propertymanagement.model.User;
 import com.example.propertymanagement.payload.AuthResponse;
 import com.example.propertymanagement.payload.LoginRequest;
 import com.example.propertymanagement.payload.RegisterRequest;
+import com.example.propertymanagement.repository.OrganizationRepository;
 import com.example.propertymanagement.repository.UserRepository;
 import com.example.propertymanagement.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,9 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private OrganizationRepository organizationRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -54,8 +59,24 @@ public class AuthController {
         user.setName(registerRequest.getName());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRole(registerRequest.getRole() != null ? registerRequest.getRole() : "USER");
         user.setStatus("ACTIVE");
+
+        if (registerRequest.getOrgName() != null && !registerRequest.getOrgName().trim().isEmpty()) {
+            // Registering as an Organization
+            Organization org = new Organization();
+            org.setName(registerRequest.getOrgName());
+            org.setEmail(registerRequest.getEmail());
+            org.setStatus("ACTIVE");
+            org = organizationRepository.save(org);
+
+            user.setOrganization(org);
+            user.setRole("ADMIN"); // The person creating the org is the Admin
+            user.setCanEditPrice(true);
+        } else {
+            // Standard Customer
+            user.setRole(registerRequest.getRole() != null ? registerRequest.getRole() : "USER");
+            user.setCanEditPrice(false);
+        }
 
         userRepository.save(user);
 

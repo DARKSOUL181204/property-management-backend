@@ -1,5 +1,12 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import { Building2, LayoutDashboard, LogOut, Moon, Sun } from "lucide-react";
+import {
+  Building2,
+  LayoutDashboard,
+  LogOut,
+  Moon,
+  Sun,
+  Users,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { jwtDecode } from "jwt-decode";
@@ -57,7 +64,7 @@ export default function Layout() {
               <div className="flex-shrink-0 flex items-center">
                 <Building2 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
-                  PropManage
+                  Enclave
                 </span>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -72,6 +79,12 @@ export default function Layout() {
                   className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
                 >
                   <Building2 className="mr-2" size={18} /> Properties
+                </Link>
+                <Link
+                  to="/tenants"
+                  className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >
+                  <Users className="mr-2" size={18} /> Tenants
                 </Link>
                 {userRole === "ADMIN" && (
                   <Link

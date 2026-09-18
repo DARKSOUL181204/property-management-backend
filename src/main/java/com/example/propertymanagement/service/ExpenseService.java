@@ -10,4 +10,6 @@ public interface ExpenseService {
     ExpenseDto getExpenseById(UUID id);
     ExpenseDto updateExpense(UUID id, ExpenseDto expenseDto);
     void deleteExpense(UUID id);
+    void deleteAllExpensesByPropertyId(UUID propertyId);
+    List<ExpenseDto> getExpensesByPropertyId(UUID propertyId);
 }

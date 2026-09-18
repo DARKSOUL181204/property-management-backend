@@ -284,20 +284,32 @@ export default function Properties() {
                       {p.name}
                     </p>
                     <p className="text-xs text-gray-500 sm:hidden flex items-center mt-0.5">
-                      <MapPin size={10} className="mr-0.5" /> Chennai
+                      <MapPin size={10} className="mr-0.5" /> {p.name.split(" ").slice(2).join(" ")}
                     </p>
                   </div>
                 </td>
                 <td className="p-4 hidden sm:table-cell text-sm text-gray-600 dark:text-gray-300">
                   <span className="flex items-center">
-                    <MapPin size={14} className="mr-1 text-gray-400" /> Chennai,
+                    <MapPin size={14} className="mr-1 text-gray-400" /> {p.name.split(" ").slice(2).join(" ")},
                     TN
                   </span>
                 </td>
                 <td className="p-4 text-sm text-gray-600 dark:text-gray-300">
                   {p.propertyType || "Residential"}
                 </td>
+                
+                <td className="p-4 text-center">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    p.healthState === 'EXCELLENT' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                    p.healthState === 'GOOD' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                    p.healthState === 'MODERATE' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                  }`}>
+                    {p.healthState || 'MODERATE'}
+                  </span>
+                </td>
                 <td className="p-4 text-right">
+
                   <Badge
                     variant={p.status === "ACTIVE" ? "success" : "neutral"}
                   >

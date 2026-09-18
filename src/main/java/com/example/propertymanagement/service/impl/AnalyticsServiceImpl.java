@@ -19,6 +19,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Autowired
     private UnitRepository unitRepository;
+    @org.springframework.beans.factory.annotation.Autowired
+    private PropertyRepository propertyRepository;
     @Autowired
     private ExpenseRepository expenseRepository;
     @Autowired
@@ -92,6 +94,17 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         } else {
             response.setProfitMargin(0.0);
         }
+        
+        Property p = propertyRepository.findById(propertyId).orElse(null);
+        BigDecimal buildCost = (p != null && p.getBuildCost() != null) ? p.getBuildCost() : BigDecimal.ZERO;
+        response.setBuildCost(buildCost);
+        
+        if (buildCost.compareTo(BigDecimal.ZERO) > 0) {
+            response.setRoiPercentage(response.getNetProfit().divide(buildCost, 4, RoundingMode.HALF_UP).doubleValue() * 100);
+        } else {
+            response.setRoiPercentage(0.0);
+        }
+        
         return response;
     }
 
@@ -99,12 +112,16 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     public ExpenseAnalysisResponse getExpenseAnalysis(UUID propertyId) {
         List<Expense> expenses = expenseRepository.findByPropertyPropertyId(propertyId);
         
-        BigDecimal total = expenses.stream().map(Expense::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         Map<String, BigDecimal> byCategory = expenses.stream()
                 .collect(Collectors.groupingBy(
                         Expense::getCategory,
                         Collectors.mapping(Expense::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
                 ));
+        
+        // Ensure no category drops below zero
+        byCategory.replaceAll((k, v) -> v.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : v);
+        
+        BigDecimal total = byCategory.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
         ExpenseAnalysisResponse response = new ExpenseAnalysisResponse();
         response.setPropertyId(propertyId);
@@ -141,12 +158,23 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         response.setMaintenance(getMaintenanceAnalysis(propertyId));
         
         double occupancy = response.getOccupancy().getOccupancyRate();
-        if (occupancy >= 90.0) {
+        double profitMargin = response.getProfitability().getProfitMargin();
+        int openIssues = response.getMaintenance().getOpenRequests();
+        
+        // Dynamic Health Score based on Occupancy, Profit Margin, Maintenance, and ROI
+        Double roi = response.getProfitability().getRoiPercentage();
+        if (roi != null && roi >= 100.0) {
             response.setOverallHealthScore("EXCELLENT");
-        } else if (occupancy >= 70.0) {
+        } else if (occupancy >= 80.0 && profitMargin >= 40.0 && openIssues <= 2) {
+            response.setOverallHealthScore("EXCELLENT");
+        } else if (occupancy >= 60.0 && profitMargin >= 20.0 && openIssues <= 5) {
             response.setOverallHealthScore("GOOD");
+        } else if (profitMargin > 5.0) {
+            response.setOverallHealthScore("MODERATE");
+        } else if (profitMargin <= 5.0 && profitMargin >= -10.0) {
+            response.setOverallHealthScore("POOR");
         } else {
-            response.setOverallHealthScore("NEEDS ATTENTION");
+            response.setOverallHealthScore("CRITICAL");
         }
         
         return response;

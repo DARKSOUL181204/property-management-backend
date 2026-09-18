@@ -7,6 +7,8 @@ import Employees from "./components/Employees";
 import PropertyDetails from "./components/PropertyDetails";
 import PublicPortal from "./components/PublicPortal";
 import PublicPropertyDetails from "./components/PublicPropertyDetails";
+import Tenants from "./components/Tenants";
+import TenantPortal from "./components/TenantPortal";
 
 function PrivateRoute({ children }: any) {
   const token = localStorage.getItem("token");
@@ -37,8 +39,17 @@ export default function App() {
           <Route path="dashboard/:propertyId" element={<Dashboard />} />
           <Route path="properties" element={<Properties />} />
           <Route path="properties/:propertyId" element={<PropertyDetails />} />
+          <Route path="tenants" element={<Tenants />} />
           <Route path="employees" element={<Employees />} />
         </Route>
+        <Route
+          path="/portal"
+          element={
+            <PrivateRoute>
+              <TenantPortal />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

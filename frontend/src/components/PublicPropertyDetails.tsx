@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import api from "../api";
 import {
   MapPin,
@@ -18,6 +19,7 @@ export default function PublicPropertyDetails() {
   const navigate = useNavigate();
   const [property, setProperty] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState("USER");
   const [showPhone, setShowPhone] = useState(false);
   const [showLightbox, setShowLightbox] = useState(false);
 
@@ -26,6 +28,10 @@ export default function PublicPropertyDetails() {
     const token = localStorage.getItem("token");
     if (token) {
       setIsLoggedIn(true);
+      try {
+        const decoded: any = jwtDecode(token);
+        setUserRole(decoded.role || "USER");
+      } catch (e) {}
     }
 
     // Temporarily remove auth header for public fetch
@@ -85,12 +91,14 @@ export default function PublicPropertyDetails() {
               Login / Register
             </Link>
           ) : (
-            <Link
-              to="/dashboard"
-              className="text-sm font-semibold text-blue-600 dark:text-blue-400"
-            >
-              Dashboard
-            </Link>
+            <div className="flex gap-4">
+              <Link
+                to={userRole === "USER" ? "/portal" : "/dashboard"}
+                className="text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center"
+              >
+                {userRole === "USER" ? "My Portal" : "Dashboard"}
+              </Link>
+            </div>
           )}
         </div>
       </nav>

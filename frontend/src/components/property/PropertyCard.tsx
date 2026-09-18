@@ -92,7 +92,7 @@ export default function PropertyCard({
       }}
       className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col min-w-[280px] md:min-w-[320px] w-full snap-start transition-all ${isPublic ? "cursor-pointer" : ""}`}
     >
-      <div className="h-48 relative overflow-hidden group">
+      <div className="h-48 shrink-0 relative overflow-hidden group">
         <img
           src={imageUrl}
           alt={property.name}
