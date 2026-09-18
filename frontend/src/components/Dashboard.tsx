@@ -33,6 +33,21 @@ export default function Dashboard() {
   }, [activePropertyId]);
 
 
+
+  const handleResetExpenses = async () => {
+    if (window.confirm("WARNING: Are you sure you want to completely reset ALL expenses for this property to zero? This action cannot be undone.")) {
+      try {
+        await api.delete(`/expenses/property/${activePropertyId}`);
+        const res = await api.get(`/analytics/properties/${activePropertyId}/performance`);
+        setAnalytics(res.data);
+        setNotification(`All expenses for this property have been completely reset to ₹0.`);
+        setTimeout(() => setNotification(null), 5000);
+      } catch (err) {
+        console.error("Failed to reset expenses", err);
+      }
+    }
+  };
+
 const handleQuickLog = async (e: any) => {
     e.preventDefault();
     if (!activePropertyId) return;
