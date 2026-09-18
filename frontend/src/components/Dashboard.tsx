@@ -96,14 +96,17 @@ const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([
     { name: 'Vacant', value: analytics.occupancy.vacantUnits }
   ];
   
-  const buildCost = analytics.profitability.buildCost || 0;
-  const lifetimeProfit = analytics.profitability.netProfit - buildCost;
+  const totalUnits = (analytics.occupancy.occupiedUnits + analytics.occupancy.vacantUnits) || 1;
+  const buildCostPerUnit = Math.round((analytics.profitability.buildCost || 0) / totalUnits);
+  const revenuePerUnit = Math.round(analytics.profitability.totalRevenue / totalUnits);
+  const expensesPerUnit = Math.round(analytics.profitability.totalExpenses / totalUnits);
+  const lifetimeProfitPerUnit = Math.round((analytics.profitability.netProfit / totalUnits) - buildCostPerUnit);
   
   const financialData = [
-    { name: 'Initial Investment', value: -buildCost, fill: '#8b5cf6' },
-    { name: 'Total Revenue', value: analytics.profitability.totalRevenue, fill: '#10b981' },
-    { name: 'Operating Expenses', value: -analytics.profitability.totalExpenses, fill: '#ef4444' },
-    { name: 'Lifetime Cash Flow', value: lifetimeProfit, fill: lifetimeProfit >= 0 ? '#10b981' : '#f97316' }
+    { name: 'Build Cost (Per Unit)', value: -buildCostPerUnit, fill: '#8b5cf6' },
+    { name: 'Revenue (Per Unit)', value: revenuePerUnit, fill: '#10b981' },
+    { name: 'Expenses (Per Unit)', value: -expensesPerUnit, fill: '#ef4444' },
+    { name: 'Net Cash Flow (Per Unit)', value: lifetimeProfitPerUnit, fill: lifetimeProfitPerUnit >= 0 ? '#10b981' : '#f97316' }
   ];
 
   return (
@@ -167,7 +170,7 @@ const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([
       </div>
 
       <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Lifetime Cash Flow Analysis (Inflows vs Outflows)</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Unit Economics (How we are getting profit)</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={financialData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
