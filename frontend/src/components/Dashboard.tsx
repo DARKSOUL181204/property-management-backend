@@ -64,10 +64,16 @@ export default function Dashboard() {
 
   if (!analytics) return <div className="text-center py-20 text-gray-500 animate-pulse">Loading Graphs...</div>;
 
-  const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([name, value]) => ({ name, value }));
+const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([name, value]) => ({ name, value }));
   const occupancyData = [
     { name: 'Occupied', value: analytics.occupancy.occupiedUnits },
     { name: 'Vacant', value: analytics.occupancy.vacantUnits }
+  ];
+  
+  const financialData = [
+    { name: 'Total Revenue', value: analytics.profitability.totalRevenue, fill: '#10b981' },
+    { name: 'Total Expenses', value: analytics.profitability.totalExpenses, fill: '#ef4444' },
+    { name: 'Net Profit', value: analytics.profitability.netProfit, fill: '#3b82f6' }
   ];
 
   return (
@@ -125,7 +131,27 @@ export default function Dashboard() {
              <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-emerald-500 mr-2"></div><span className="text-sm text-gray-600 dark:text-gray-300">Occupied ({analytics.occupancy.occupiedUnits})</span></div>
              <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div><span className="text-sm text-gray-600 dark:text-gray-300">Vacant ({analytics.occupancy.vacantUnits})</span></div>
           </div>
+
         </div>
+      </div>
+
+      <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Financial Summary (Revenue vs Expenses vs Profit)</h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={financialData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#374151" opacity={0.2} />
+                <XAxis type="number" tick={{fill: '#6b7280'}} axisLine={false} tickLine={false} tickFormatter={val => `₹${val}`} />
+                <YAxis dataKey="name" type="category" tick={{fill: '#6b7280', fontWeight: 'bold'}} axisLine={false} tickLine={false} width={100} />
+                <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} formatter={(val: number) => [`₹${val.toLocaleString()}`, 'Amount']} />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
+                  {financialData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
       </div>
 
       <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
