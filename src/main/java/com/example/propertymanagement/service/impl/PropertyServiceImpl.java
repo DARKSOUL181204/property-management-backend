@@ -49,35 +49,28 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
         public List<PropertyDto> getAllPropertys() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("GET ALL PROPERTIES AUTH: " + (auth != null ? auth.getName() : "NULL"));
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
             User user = userRepository.findByEmail(auth.getName()).orElse(null);
             if (user != null) {
-                System.out.println("USER ROLE IS: " + user.getRole() + ", ORG: " + (user.getOrganization() != null ? user.getOrganization().getOrganizationId() : "NULL"));
-                if ("MANAGER".equals(user.getRole()) || "EMPLOYEE".equals(user.getRole())) {
-                    if (user.getOrganization() != null) {
-                        return propertyRepository.findAll().stream()
-                                .filter(p -> p.getOrganization() != null && p.getOrganization().getOrganizationId().equals(user.getOrganization().getOrganizationId()))
-                                .map(property -> modelMapper.map(property, PropertyDto.class))
-                                .toList();
-                    }
-                    // MANAGER with no org gets empty list (not all properties)
-                    return Collections.emptyList();
+                // If user belongs to an org, ALWAYS filter by that org (regardless of role)
+                if (user.getOrganization() != null) {
+                    final java.util.UUID orgId = user.getOrganization().getOrganizationId();
+                    return propertyRepository.findAll().stream()
+                            .filter(p -> p.getOrganization() != null && p.getOrganization().getOrganizationId().equals(orgId))
+                            .map(property -> modelMapper.map(property, PropertyDto.class))
+                            .toList();
                 }
+                // No org: only super-admins see everything, everyone else gets empty
                 if ("ADMIN".equals(user.getRole())) {
-                    // Admin sees all
                     return propertyRepository.findAll().stream()
                             .map(property -> modelMapper.map(property, PropertyDto.class))
                             .toList();
                 }
-                // USER/CUSTOMER role - return empty
                 return Collections.emptyList();
             }
         }
-        
-        List<Property> propertys = propertyRepository.findAll();
-        return propertys.stream().map(property -> modelMapper.map(property, PropertyDto.class))
-                .toList();
+        // Unauthenticated – return nothing (public portal uses /api/public/*)
+        return Collections.emptyList();
     }
 
     @Override

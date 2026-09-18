@@ -41,14 +41,20 @@ public class RentalTenantServiceImpl implements RentalTenantService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
             User user = userRepository.findByEmail(auth.getName()).orElse(null);
-            if (user != null && ("MANAGER".equals(user.getRole()) || "EMPLOYEE".equals(user.getRole())) && user.getOrganization() != null) {
-                return rentalTenantRepository.findAll().stream()
-                        .filter(e -> e.getOrganization() != null && e.getOrganization().getOrganizationId().equals(user.getOrganization().getOrganizationId()))
-                        .map(e -> modelMapper.map(e, RentalTenantDto.class))
-                        .toList();
+            if (user != null) {
+                if (user.getOrganization() != null) {
+                    final java.util.UUID orgId = user.getOrganization().getOrganizationId();
+                    return rentalTenantRepository.findAll().stream()
+                            .filter(e -> e.getOrganization() != null && e.getOrganization().getOrganizationId().equals(orgId))
+                            .map(e -> modelMapper.map(e, RentalTenantDto.class))
+                            .toList();
+                }
+                if ("ADMIN".equals(user.getRole())) {
+                    return rentalTenantRepository.findAll().stream().map(e -> modelMapper.map(e, RentalTenantDto.class)).toList();
+                }
             }
         }
-        return rentalTenantRepository.findAll().stream().map(e -> modelMapper.map(e, RentalTenantDto.class)).toList();
+        return java.util.Collections.emptyList();
     }
 
     @Override
