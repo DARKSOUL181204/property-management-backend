@@ -97,16 +97,14 @@ const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([
   ];
   
   const totalUnits = (analytics.occupancy.occupiedUnits + analytics.occupancy.vacantUnits) || 1;
-  const buildCostPerUnit = Math.round((analytics.profitability.buildCost || 0) / totalUnits);
   const revenuePerUnit = Math.round(analytics.profitability.totalRevenue / totalUnits);
   const expensesPerUnit = Math.round(analytics.profitability.totalExpenses / totalUnits);
-  const lifetimeProfitPerUnit = Math.round((analytics.profitability.netProfit / totalUnits) - buildCostPerUnit);
+  const operatingProfitPerUnit = Math.round(analytics.profitability.netProfit / totalUnits);
   
   const financialData = [
-    { name: 'Build Cost (Per Unit)', value: -buildCostPerUnit, fill: '#8b5cf6' },
-    { name: 'Revenue (Per Unit)', value: revenuePerUnit, fill: '#10b981' },
-    { name: 'Expenses (Per Unit)', value: -expensesPerUnit, fill: '#ef4444' },
-    { name: 'Net Cash Flow (Per Unit)', value: lifetimeProfitPerUnit, fill: lifetimeProfitPerUnit >= 0 ? '#10b981' : '#f97316' }
+    { name: 'Revenue Generated', value: revenuePerUnit, fill: '#10b981' },
+    { name: 'Operating Expenses', value: expensesPerUnit, fill: '#ef4444' },
+    { name: 'Net Operating Profit', value: operatingProfitPerUnit, fill: '#3b82f6' }
   ];
 
   return (
@@ -170,14 +168,14 @@ const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([
       </div>
 
       <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Unit Economics (How we are getting profit)</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Operating Unit Economics (Profit Generation)</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={financialData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#374151" opacity={0.2} />
-                <XAxis type="number" tick={{fill: '#6b7280'}} axisLine={false} tickLine={false} tickFormatter={val => val < 0 ? `-₹${Math.abs(val)}` : `₹${val}`} />
+                <XAxis type="number" tick={{fill: '#6b7280'}} axisLine={false} tickLine={false} tickFormatter={val => `₹${val.toLocaleString()}`} />
                 <YAxis dataKey="name" type="category" tick={{fill: '#6b7280', fontWeight: 'bold'}} axisLine={false} tickLine={false} width={100} />
-                <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} formatter={(val: number) => [val < 0 ? `-₹${Math.abs(val).toLocaleString()}` : `₹${val.toLocaleString()}`, 'Amount']} />
+                <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} formatter={(val: number) => [`₹${val.toLocaleString()}`, 'Amount (Per Unit)']} />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
                   {financialData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
