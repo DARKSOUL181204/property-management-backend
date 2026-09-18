@@ -14,5 +14,6 @@ public class PropertyDto {
     private String status;
     private String transactionType;
     private Double maintenanceFee;
+    private String healthState;
     private UUID organizationOrganizationId;
 }
