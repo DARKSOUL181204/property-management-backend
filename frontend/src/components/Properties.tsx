@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api";
-import { Plus, Building, MapPin, Search, X } from "lucide-react";
+import { Plus, Building, MapPin, Search, X, Trash2 } from "lucide-react";
 import Badge from "./ui/Badge";
 import { motion } from "framer-motion";
 
@@ -61,10 +61,30 @@ export default function Properties() {
       });
       fetchProperties();
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.response?.data || err?.message || "Failed to add property. Please try again.";
-      setAddError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        err?.message ||
+        "Failed to add property. Please try again.";
+      setAddError(typeof msg === "string" ? msg : JSON.stringify(msg));
     } finally {
       setIsAdding(false);
+    }
+  };
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (e: any, propertyId: string) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this property? This cannot be undone.")) return;
+    setDeletingId(propertyId);
+    try {
+      await api.delete(`/properties/${propertyId}`);
+      fetchProperties();
+    } catch (err: any) {
+      alert("Failed to delete: " + (err?.response?.data?.message || err?.message));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -288,7 +308,9 @@ export default function Properties() {
               <th className="p-4 font-medium">Property Name</th>
               <th className="p-4 font-medium hidden sm:table-cell">Location</th>
               <th className="p-4 font-medium">Type</th>
+              <th className="p-4 font-medium text-right">Health</th>
               <th className="p-4 font-medium text-right">Status</th>
+              <th className="p-4 font-medium text-right">Delete</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -321,45 +343,71 @@ export default function Properties() {
                       {p.name}
                     </p>
                     <p className="text-xs text-gray-500 sm:hidden flex items-center mt-0.5">
-                      <MapPin size={10} className="mr-0.5" /> {p.name.split(" ").slice(2).join(" ")}
+                      <MapPin size={10} className="mr-0.5" />{" "}
+                      {p.name.split(" ").slice(2).join(" ")}
                     </p>
                   </div>
                 </td>
                 <td className="p-4 hidden sm:table-cell text-sm text-gray-600 dark:text-gray-300">
                   <span className="flex items-center">
-                    <MapPin size={14} className="mr-1 text-gray-400" /> {p.name.split(" ").slice(2).join(" ")},
-                    TN
+                    <MapPin size={14} className="mr-1 text-gray-400" />{" "}
+                    {p.name.split(" ").slice(2).join(" ")}, TN
                   </span>
                 </td>
                 <td className="p-4 text-sm text-gray-600 dark:text-gray-300">
                   {p.propertyType || "Residential"}
                 </td>
-                
+
                 <td className="p-4 text-center">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    p.healthState === 'EXCELLENT' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                    p.healthState === 'GOOD' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                    p.healthState === 'MODERATE' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                  }`}>
-                    {p.healthState || 'MODERATE'}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      p.healthState === "EXCELLENT"
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        : p.healthState === "GOOD"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                          : p.healthState === "MODERATE"
+                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    }`}
+                  >
+                    {p.healthState || "MODERATE"}
                   </span>
                 </td>
                 <td className="p-4 text-right">
-
                   <Badge
                     variant={p.status === "ACTIVE" ? "success" : "neutral"}
                   >
                     {p.status}
                   </Badge>
                 </td>
+                <td className="p-4 text-right">
+                  <button
+                    onClick={(e) => handleDelete(e, p.propertyId)}
+                    disabled={deletingId === p.propertyId}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition disabled:opacity-40"
+                    title="Delete property"
+                  >
+                    {deletingId === p.propertyId ? (
+                      <span className="text-xs">...</span>
+                    ) : (
+                      <Trash2 size={15} />
+                    )}
+                  </button>
+                </td>
               </motion.tr>
             ))}
           </tbody>
         </table>
-        {filteredProperties.length === 0 && (
+        {filteredProperties.length === 0 && properties.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Building size={48} className="text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-lg font-semibold text-gray-500 dark:text-gray-400">No properties yet</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">This organisation has no properties. Click "Add Property" to get started.</p>
+          </div>
+        )}
+        {filteredProperties.length === 0 && properties.length > 0 && (
           <div className="p-8 text-center text-gray-500">
-            No properties found.
+            No properties match your search.
           </div>
         )}
       </div>
