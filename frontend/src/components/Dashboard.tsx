@@ -83,7 +83,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatCard title="Health" value={analytics.overallHealthScore} icon={Activity} colorClass="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40" />
         <StatCard title="Occupancy" value={`${analytics.occupancy.occupancyRate.toFixed(1)}%`} icon={Users} colorClass="bg-blue-100 text-blue-600 dark:bg-blue-900/40" />
-        <StatCard title="Net Profit" value={`$${analytics.profitability.netProfit.toLocaleString()}`} icon={TrendingUp} colorClass="bg-green-100 text-green-600 dark:bg-green-900/40" />
+        <StatCard title="Net Profit" value={`₹${analytics.profitability.netProfit.toLocaleString()}`} icon={TrendingUp} colorClass="bg-green-100 text-green-600 dark:bg-green-900/40" />
         <StatCard title="Maintenance" value={analytics.maintenance.openRequests} icon={Wrench} colorClass="bg-red-100 text-red-600 dark:bg-red-900/40" />
       </div>
 
@@ -95,7 +95,7 @@ export default function Dashboard() {
               <BarChart data={expenseData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" opacity={0.2} />
                 <XAxis dataKey="name" tick={{fill: '#6b7280'}} axisLine={false} tickLine={false} />
-                <YAxis tick={{fill: '#6b7280'}} axisLine={false} tickLine={false} tickFormatter={val => `$${val}`} />
+                <YAxis tick={{fill: '#6b7280'}} axisLine={false} tickLine={false} tickFormatter={val => `₹${val}`} />
                 <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
                 <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} barSize={40} />
               </BarChart>
