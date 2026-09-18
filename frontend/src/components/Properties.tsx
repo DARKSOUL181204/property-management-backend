@@ -17,6 +17,7 @@ export default function Properties() {
     transactionType: "BUY",
     totalUnits: 1,
     status: "ACTIVE",
+    buildCost: 0,
   });
   const navigate = useNavigate();
   const focusRef = useRef<HTMLInputElement>(null);
@@ -51,6 +52,7 @@ export default function Properties() {
         transactionType: "BUY",
         totalUnits: 1,
         status: "ACTIVE",
+        buildCost: 0,
       });
       fetchProperties();
     } catch (err) {
@@ -198,6 +200,27 @@ export default function Properties() {
                       setNewProp({
                         ...newProp,
                         totalUnits: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="prop-buildCost"
+                    className="block text-sm font-medium mb-1 dark:text-gray-300"
+                  >
+                    Initial Build Cost (₹)
+                  </label>
+                  <input
+                    id="prop-buildCost"
+                    type="number"
+                    required
+                    value={newProp.buildCost}
+                    onChange={(e) =>
+                      setNewProp({
+                        ...newProp,
+                        buildCost: parseInt(e.target.value) || 0,
                       })
                     }
                     className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"

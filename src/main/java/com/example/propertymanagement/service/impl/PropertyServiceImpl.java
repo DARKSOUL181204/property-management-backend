@@ -33,6 +33,15 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
     public PropertyDto createProperty(PropertyDto propertyDto) {
         Property property = modelMapper.map(propertyDto, Property.class);
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            if (user != null && user.getOrganization() != null) {
+                property.setOrganization(user.getOrganization());
+            }
+        }
+        
         Property savedProperty = propertyRepository.save(property);
         return modelMapper.map(savedProperty, PropertyDto.class);
     }
