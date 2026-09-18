@@ -61,8 +61,17 @@ public class PropertyServiceImpl implements PropertyService {
                                 .map(property -> modelMapper.map(property, PropertyDto.class))
                                 .toList();
                     }
+                    // MANAGER with no org gets empty list (not all properties)
                     return Collections.emptyList();
                 }
+                if ("ADMIN".equals(user.getRole())) {
+                    // Admin sees all
+                    return propertyRepository.findAll().stream()
+                            .map(property -> modelMapper.map(property, PropertyDto.class))
+                            .toList();
+                }
+                // USER/CUSTOMER role - return empty
+                return Collections.emptyList();
             }
         }
         
