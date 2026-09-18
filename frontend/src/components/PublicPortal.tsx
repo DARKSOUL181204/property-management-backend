@@ -203,12 +203,20 @@ export default function PublicPortal() {
           </div>
 
           <div className="flex items-center gap-4 shrink-0">
-            <button
-              onClick={() => navigate("/login")}
-              className="text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors"
-            >
-              Login / Register
-            </button>
+            {isLoggedIn ? (
+               <div className="flex items-center gap-4">
+                  <button onClick={() => navigate(userRole === 'USER' ? '/portal' : '/dashboard')} className="text-sm font-bold bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors">
+                     {userRole === 'USER' ? 'My Portal' : 'Dashboard'}
+                  </button>
+                  <button onClick={() => { localStorage.removeItem('token'); setIsLoggedIn(false); window.location.reload(); }} className="text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-red-600 transition-colors">
+                     Logout
+                  </button>
+               </div>
+            ) : (
+               <button onClick={() => navigate('/login')} className="text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 transition-colors">
+                 Login / Register
+               </button>
+            )}
           </div>
         </div>
       </nav>
@@ -304,6 +312,7 @@ export default function PublicPortal() {
                   placeholder="Search localities or projects..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  id="searchInput"
                   className="bg-transparent outline-none w-full text-slate-900 dark:text-white placeholder-slate-400 font-medium text-sm"
                 />
               </div>
@@ -383,6 +392,7 @@ export default function PublicPortal() {
             <HorizontalSlider
               title={`Featured in ${activeCityTab}`}
               actionText="View All"
+              onAction={() => {window.scrollTo({top:0, behavior:'smooth'}); document.getElementById('searchInput')?.focus();}}
             >
               {filteredProperties.slice(0, 8).map((p: any) => (
                 <div
@@ -403,7 +413,8 @@ export default function PublicPortal() {
               )}
             </HorizontalSlider>
 
-            <HorizontalSlider title="Sponsored Properties" actionText="Explore">
+            <HorizontalSlider title="Sponsored Properties" actionText="Explore"
+              onAction={() => {window.scrollTo({top:0, behavior:'smooth'}); document.getElementById('searchInput')?.focus();}}>
               {[...properties]
                 .reverse()
                 .slice(0, 8)
@@ -424,7 +435,8 @@ export default function PublicPortal() {
                 ))}
             </HorizontalSlider>
 
-            <HorizontalSlider title="Discover Pan India" actionText="View Map">
+            <HorizontalSlider title="Discover Pan India" actionText="View Map"
+              onAction={() => {window.scrollTo({top:0, behavior:'smooth'}); document.getElementById('searchInput')?.focus();}}>
               {properties.slice(0, 10).map((p: any, idx: number) => (
                 <div
                   key={`all-${p.propertyId}`}

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
-export default function HorizontalSlider({ children, title, actionText }: any) {
+export default function HorizontalSlider({ children, title, actionText, onAction }: any) {
   const scrollRef = useRef(null);
 
   const scroll = (direction: any) => {
@@ -18,7 +18,7 @@ export default function HorizontalSlider({ children, title, actionText }: any) {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h2>
           <div className="w-12 h-1.5 bg-blue-600 mt-2 rounded-full"></div>
         </div>
-        {actionText && <button className="text-blue-600 dark:text-blue-400 font-semibold text-sm hover:underline flex items-center transition-colors">{actionText} <ArrowRight size={16} className="ml-1"/></button>}
+        {actionText && <button onClick={onAction} className="text-blue-600 dark:text-blue-400 font-semibold text-sm hover:underline flex items-center transition-colors">{actionText} <ArrowRight size={16} className="ml-1"/></button>}
       </div>
       
       <div className="relative group">
