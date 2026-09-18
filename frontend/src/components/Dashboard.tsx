@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [activePropertyId, setActivePropertyId] = useState(propertyId);
-  const [expenseData, setExpenseData] = useState({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0] });
+  const [newExpenseData, setNewExpenseData] = useState({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0] });
   const [isLogging, setIsLogging] = useState(false);
 
   useEffect(() => {
@@ -41,14 +41,14 @@ export default function Dashboard() {
       await api.post('/expenses', {
          propertyPropertyId: activePropertyId,
          organizationOrganizationId: activeProp?.organizationOrganizationId,
-         amount: parseFloat(expenseData.amount),
-         category: expenseData.category,
-         expenseDate: expenseData.expenseDate
+         amount: parseFloat(newExpenseData.amount),
+         category: newExpenseData.category,
+         expenseDate: newExpenseData.expenseDate
       });
       // Refetch analytics
       const res = await api.get(`/analytics/properties/${activePropertyId}/performance`);
       setAnalytics(res.data);
-      setExpenseData({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0] });
+      setNewExpenseData({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0] });
     } catch(err) {
       console.error(err);
     } finally {
@@ -127,7 +127,7 @@ export default function Dashboard() {
          <form onSubmit={handleQuickLog} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Category</label>
-               <select value={expenseData.category} onChange={e => setExpenseData({...expenseData, category: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+               <select value={newExpenseData.category} onChange={e => setNewExpenseData({...newExpenseData, category: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
                  <option value="MARKETING">Marketing</option>
                  <option value="MAINTENANCE">Maintenance</option>
                  <option value="UTILITY">Utility</option>
@@ -137,11 +137,11 @@ export default function Dashboard() {
             </div>
             <div>
                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Amount (₹)</label>
-               <input required type="number" step="0.01" value={expenseData.amount} onChange={e => setExpenseData({...expenseData, amount: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. 5000" />
+               <input required type="number" step="0.01" value={newExpenseData.amount} onChange={e => setNewExpenseData({...newExpenseData, amount: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. 5000" />
             </div>
             <div>
                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Date</label>
-               <input required type="date" value={expenseData.expenseDate} onChange={e => setExpenseData({...expenseData, expenseDate: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+               <input required type="date" value={newExpenseData.expenseDate} onChange={e => setNewExpenseData({...newExpenseData, expenseDate: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
             <button type="submit" disabled={isLogging} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition focus:outline-none focus:ring-4 focus:ring-emerald-500/50 disabled:opacity-50">
                {isLogging ? 'Logging...' : 'Log Expense'}
