@@ -64,7 +64,7 @@ export default function Layout() {
               <div className="flex-shrink-0 flex items-center">
                 <Building2 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
-                  PropManage
+                  Enclave
                 </span>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

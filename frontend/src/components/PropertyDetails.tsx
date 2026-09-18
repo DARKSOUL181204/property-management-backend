@@ -68,7 +68,8 @@ export default function PropertyDetails() {
        status: property.status,
        transactionType: property.transactionType || 'BUY',
        propertyType: property.propertyType,
-       totalUnits: property.totalUnits
+       totalUnits: property.totalUnits,
+       maintenanceFee: property.maintenanceFee || 5000
     });
     setShowEditModal(true);
   };
@@ -81,7 +82,8 @@ export default function PropertyDetails() {
        status: property.status,
        transactionType: property.transactionType || 'BUY',
        propertyType: property.propertyType,
-       totalUnits: property.totalUnits
+       totalUnits: property.totalUnits,
+       maintenanceFee: property.maintenanceFee || 5000
     });
     setShowImageModal(true);
   };
@@ -124,10 +126,10 @@ export default function PropertyDetails() {
                   </div>
                 </div>
                 <div>
-                   <label htmlFor="edit-price" className="block text-sm font-medium mb-1 dark:text-gray-300">Listed Price</label>
+                   <label htmlFor="edit-price" className="block text-sm font-medium mb-1 dark:text-gray-300">Project Maintenance Fee (₹)</label>
                    <input 
                       id="edit-price" disabled={!canEditPrice} aria-disabled={!canEditPrice}
-                      defaultValue={priceStr} 
+                      value={editData.maintenanceFee || 5000} onChange={e => setEditData({...editData, maintenanceFee: e.target.value})} 
                       className={`w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${!canEditPrice ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed text-gray-400' : 'bg-white dark:text-white'}`} 
                    />
                    {!canEditPrice && <p className="text-xs text-red-500 mt-1">Administrator disabled price editing for your account.</p>}
@@ -184,6 +186,9 @@ export default function PropertyDetails() {
               <h2 className="text-lg text-gray-700 dark:text-gray-200 font-medium">{property.name} - 3 BHK {sqft} Sqft Flat For Sale</h2>
               <p className="text-gray-500 flex items-center text-sm mt-1 underline decoration-gray-300">
                 <MapPin size={14} className="mr-1" aria-hidden="true"/> Grand Southern Trunk Road, Chennai
+              </p>
+              <p className="text-blue-600 dark:text-blue-400 font-bold text-sm mt-2">
+                Base Maintenance Fee: ₹{property.maintenanceFee || 5000} / month
               </p>
             </div>
             <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 w-full sm:w-auto justify-between sm:justify-start">

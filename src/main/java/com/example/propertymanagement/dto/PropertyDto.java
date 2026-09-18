@@ -13,5 +13,6 @@ public class PropertyDto {
     private Integer totalUnits;
     private String status;
     private String transactionType;
+    private Double maintenanceFee;
     private UUID organizationOrganizationId;
 }
