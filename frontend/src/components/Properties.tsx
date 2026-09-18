@@ -284,13 +284,13 @@ export default function Properties() {
                       {p.name}
                     </p>
                     <p className="text-xs text-gray-500 sm:hidden flex items-center mt-0.5">
-                      <MapPin size={10} className="mr-0.5" /> Chennai
+                      <MapPin size={10} className="mr-0.5" /> {p.name.split(" ").slice(2).join(" ")}
                     </p>
                   </div>
                 </td>
                 <td className="p-4 hidden sm:table-cell text-sm text-gray-600 dark:text-gray-300">
                   <span className="flex items-center">
-                    <MapPin size={14} className="mr-1 text-gray-400" /> Chennai,
+                    <MapPin size={14} className="mr-1 text-gray-400" /> {p.name.split(" ").slice(2).join(" ")},
                     TN
                   </span>
                 </td>
