@@ -20,17 +20,55 @@ export default function Dashboard() {
   useEffect(() => {
     api.get('/properties').then(res => {
       setProperties(res.data);
-      if (!activePropertyId && res.data.length > 0) setActivePropertyId(res.data[0].propertyId);
+      if (!activePropertyId && res.data.length > 0) setActivePropertyId('ALL');
     });
   }, []);
 
   useEffect(() => {
-    if (activePropertyId) {
+    if (activePropertyId === 'ALL' && properties.length > 0) {
+      Promise.all(properties.map(p => api.get(`/analytics/properties/${p.propertyId}/performance`)))
+        .then(responses => {
+          const combined = {
+            overallHealthScore: 'PORTFOLIO',
+            occupancy: { occupiedUnits: 0, vacantUnits: 0, occupancyRate: 0 },
+            profitability: { totalRevenue: 0, totalExpenses: 0, netProfit: 0, buildCost: 0, roiPercentage: 0 },
+            expenses: { expensesByCategory: {} },
+            maintenance: { openRequests: 0, closedRequests: 0 }
+          };
+          
+          responses.forEach(res => {
+            const data = res.data;
+            combined.occupancy.occupiedUnits += data.occupancy.occupiedUnits;
+            combined.occupancy.vacantUnits += data.occupancy.vacantUnits;
+            
+            combined.profitability.totalRevenue += data.profitability.totalRevenue;
+            combined.profitability.totalExpenses += data.profitability.totalExpenses;
+            combined.profitability.netProfit += data.profitability.netProfit;
+            combined.profitability.buildCost += (data.profitability.buildCost || 0);
+            
+            combined.maintenance.openRequests += data.maintenance.openRequests;
+            combined.maintenance.closedRequests += data.maintenance.closedRequests;
+            
+            if (data.expenses && data.expenses.expensesByCategory) {
+              Object.entries(data.expenses.expensesByCategory).forEach(([key, val]) => {
+                combined.expenses.expensesByCategory[key] = (combined.expenses.expensesByCategory[key] || 0) + (val as number);
+              });
+            }
+          });
+          
+          const totalUnits = combined.occupancy.occupiedUnits + combined.occupancy.vacantUnits;
+          combined.occupancy.occupancyRate = totalUnits ? (combined.occupancy.occupiedUnits / totalUnits) * 100 : 0;
+          combined.profitability.roiPercentage = combined.profitability.buildCost ? (combined.profitability.netProfit / combined.profitability.buildCost) * 100 : 0;
+          
+          setAnalytics(combined);
+        })
+        .catch(console.error);
+    } else if (activePropertyId && activePropertyId !== 'ALL') {
       api.get(`/analytics/properties/${activePropertyId}/performance`)
          .then(res => setAnalytics(res.data))
          .catch(console.error);
     }
-  }, [activePropertyId]);
+  }, [activePropertyId, properties]);
 
 
 
@@ -186,7 +224,7 @@ const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([
           </div>
       </div>
 
-      <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+      {activePropertyId !== 'ALL' && (<div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
          <div className="flex justify-between items-center mb-4">
            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Adjust Expense Budgets</h3>
            <button onClick={handleResetExpenses} className="flex items-center text-sm font-bold text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 hover:bg-red-100 transition focus:outline-none focus:ring-4 focus:ring-red-500/50">
@@ -223,7 +261,7 @@ const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([
                {isLogging ? 'Applying...' : 'Apply Adjustment'}
             </button>
          </form>
-      </div>
+      </div>)}
       {notification && (
         <div className="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-bounce">
           <Activity size={20} className="text-emerald-400" />
