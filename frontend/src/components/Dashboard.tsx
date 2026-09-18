@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [activePropertyId, setActivePropertyId] = useState(propertyId);
-  const [newExpenseData, setNewExpenseData] = useState({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0] });
+  const [newExpenseData, setNewExpenseData] = useState({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0], type: 'INCREASE' });
   const [isLogging, setIsLogging] = useState(false);
 
   useEffect(() => {
@@ -41,14 +41,14 @@ export default function Dashboard() {
       await api.post('/expenses', {
          propertyPropertyId: activePropertyId,
          organizationOrganizationId: activeProp?.organizationOrganizationId,
-         amount: parseFloat(newExpenseData.amount),
+         amount: newExpenseData.type === 'DECREASE' ? -Math.abs(parseFloat(newExpenseData.amount)) : Math.abs(parseFloat(newExpenseData.amount)),
          category: newExpenseData.category,
          expenseDate: newExpenseData.expenseDate
       });
       // Refetch analytics
       const res = await api.get(`/analytics/properties/${activePropertyId}/performance`);
       setAnalytics(res.data);
-      setNewExpenseData({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0] });
+      setNewExpenseData({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0], type: 'INCREASE' });
     } catch(err) {
       console.error(err);
     } finally {
@@ -123,8 +123,15 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Log Expense</h3>
-         <form onSubmit={handleQuickLog} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Adjust Expense Budgets</h3>
+         <form onSubmit={handleQuickLog} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+            <div>
+               <label className="block text-sm font-medium mb-1 dark:text-gray-300">Action</label>
+               <select value={newExpenseData.type} onChange={e => setNewExpenseData({...newExpenseData, type: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                 <option value="INCREASE">Increase (+)</option>
+                 <option value="DECREASE">Decrease (-)</option>
+               </select>
+            </div>
             <div>
                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Category</label>
                <select value={newExpenseData.category} onChange={e => setNewExpenseData({...newExpenseData, category: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -144,7 +151,7 @@ export default function Dashboard() {
                <input required type="date" value={newExpenseData.expenseDate} onChange={e => setNewExpenseData({...newExpenseData, expenseDate: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             </div>
             <button type="submit" disabled={isLogging} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition focus:outline-none focus:ring-4 focus:ring-emerald-500/50 disabled:opacity-50">
-               {isLogging ? 'Logging...' : 'Log Expense'}
+               {isLogging ? 'Applying...' : 'Apply Adjustment'}
             </button>
          </form>
       </div>

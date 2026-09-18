@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api';
-import { MapPin, Bed, Bath, ArrowLeft, Download, Phone, ShieldCheck, Edit3, X, Image as ImageIcon, Plus, DollarSign, Calendar } from 'lucide-react';
+import { MapPin, Bed, Bath, ArrowLeft, Download, Phone, ShieldCheck, Edit3, X, Image as ImageIcon, Plus, DollarSign, Calendar, Trash2 } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 
 export default function PropertyDetails() {
@@ -67,6 +67,18 @@ export default function PropertyDetails() {
   };
 
   
+
+  const handleDeleteExpense = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this expense?")) {
+      try {
+        await api.delete(`/expenses/${id}`);
+        fetchProperty();
+      } catch (err) {
+        console.error("Failed to delete expense", err);
+      }
+    }
+  };
+
   const handleSaveExpense = async (e: any) => {
     e.preventDefault();
     try {
@@ -315,6 +327,7 @@ export default function PropertyDetails() {
                       <th className="px-4 py-3 font-medium">Date</th>
                       <th className="px-4 py-3 font-medium">Category</th>
                       <th className="px-4 py-3 font-medium text-right">Amount (₹)</th>
+                      <th className="px-4 py-3 font-medium text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -326,7 +339,12 @@ export default function PropertyDetails() {
                             {e.category}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">₹{e.amount}</td>
+                                                <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">₹{e.amount}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={() => handleDeleteExpense(e.expenseId)} className="text-red-500 hover:text-red-700 transition p-1" title="Delete Expense">
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
