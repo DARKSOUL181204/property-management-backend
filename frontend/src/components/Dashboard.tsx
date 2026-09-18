@@ -13,6 +13,8 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [activePropertyId, setActivePropertyId] = useState(propertyId);
+  const [expenseData, setExpenseData] = useState({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0] });
+  const [isLogging, setIsLogging] = useState(false);
 
   useEffect(() => {
     api.get('/properties').then(res => {
@@ -28,6 +30,31 @@ export default function Dashboard() {
          .catch(console.error);
     }
   }, [activePropertyId]);
+
+
+  const handleQuickLog = async (e: any) => {
+    e.preventDefault();
+    if (!activePropertyId) return;
+    setIsLogging(true);
+    try {
+      const activeProp = properties.find((p: any) => p.propertyId === activePropertyId);
+      await api.post('/expenses', {
+         propertyPropertyId: activePropertyId,
+         organizationOrganizationId: activeProp?.organizationOrganizationId,
+         amount: parseFloat(expenseData.amount),
+         category: expenseData.category,
+         expenseDate: expenseData.expenseDate
+      });
+      // Refetch analytics
+      const res = await api.get(`/analytics/properties/${activePropertyId}/performance`);
+      setAnalytics(res.data);
+      setExpenseData({ amount: '', category: 'MARKETING', expenseDate: new Date().toISOString().split('T')[0] });
+    } catch(err) {
+      console.error(err);
+    } finally {
+      setIsLogging(false);
+    }
+  };
 
   if (!analytics) return <div className="text-center py-20 text-gray-500 animate-pulse">Loading Graphs...</div>;
 
@@ -94,6 +121,34 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Log Expense</h3>
+         <form onSubmit={handleQuickLog} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+               <label className="block text-sm font-medium mb-1 dark:text-gray-300">Category</label>
+               <select value={expenseData.category} onChange={e => setExpenseData({...expenseData, category: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                 <option value="MARKETING">Marketing</option>
+                 <option value="MAINTENANCE">Maintenance</option>
+                 <option value="UTILITY">Utility</option>
+                 <option value="TAXES">Taxes</option>
+                 <option value="LEGAL">Legal</option>
+               </select>
+            </div>
+            <div>
+               <label className="block text-sm font-medium mb-1 dark:text-gray-300">Amount (₹)</label>
+               <input required type="number" step="0.01" value={expenseData.amount} onChange={e => setExpenseData({...expenseData, amount: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g. 5000" />
+            </div>
+            <div>
+               <label className="block text-sm font-medium mb-1 dark:text-gray-300">Date</label>
+               <input required type="date" value={expenseData.expenseDate} onChange={e => setExpenseData({...expenseData, expenseDate: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            <button type="submit" disabled={isLogging} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition focus:outline-none focus:ring-4 focus:ring-emerald-500/50 disabled:opacity-50">
+               {isLogging ? 'Logging...' : 'Log Expense'}
+            </button>
+         </form>
+      </div>
     </motion.div>
+
   );
 }

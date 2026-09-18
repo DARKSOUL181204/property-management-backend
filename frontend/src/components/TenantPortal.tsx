@@ -38,27 +38,36 @@ export default function TenantPortal() {
   }, [userEmail]);
 
   const fetchData = () => {
+    if (!userEmail) return;
     api.get("/rental-tenants").then((res) => {
-      const myTenant =
-        res.data.find((t: any) => t.email === userEmail) || res.data[0];
+      const myTenant = res.data.find((t: any) => t.email === userEmail);
+      setTenantInfo(myTenant || null);
       if (myTenant) {
-        setTenantInfo(myTenant);
         api.get("/maintenance-requests").then((mRes) => {
           setMaintenance(
             mRes.data.filter(
               (m: any) =>
                 m.rentalTenantRentalTenantId === myTenant.rentalTenantId,
-            ),
+            ).reverse(),
           );
         });
-        setLeases([
-          {
-            id: 1,
-            monthlyRent: 25000,
-            nextDueDate: "2026-10-01",
-            status: "ACTIVE",
-          },
-        ]);
+        
+        api.get("/properties").then((pRes) => {
+           const props = pRes.data;
+           const sampleProp = props.length > 0 ? props[0] : { maintenanceFee: 5000, name: 'Enclave Residency' };
+           
+           setLeases([
+             {
+               id: 1,
+               propertyName: sampleProp.name,
+               propertyId: sampleProp.propertyId,
+               monthlyRent: 25000,
+               maintenanceFee: sampleProp.maintenanceFee || 5000,
+               nextDueDate: "2026-10-01",
+               status: "ACTIVE",
+             },
+           ]);
+        });
       }
     });
   };
