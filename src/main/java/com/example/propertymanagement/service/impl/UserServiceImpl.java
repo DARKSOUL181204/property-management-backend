@@ -40,6 +40,9 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setStatus(request.getStatus());
+        if (request.getCanEditPrice() != null) {
+            user.setCanEditPrice(request.getCanEditPrice());
+        }
         
         if (request.getOrganizationId() != null) {
             Organization org = organizationRepository.findById(request.getOrganizationId())
@@ -79,6 +82,9 @@ public class UserServiceImpl implements UserService {
         }
         user.setRole(request.getRole());
         user.setStatus(request.getStatus());
+        if (request.getCanEditPrice() != null) {
+            user.setCanEditPrice(request.getCanEditPrice());
+        }
         
         if (request.getOrganizationId() != null) {
             Organization org = organizationRepository.findById(request.getOrganizationId())

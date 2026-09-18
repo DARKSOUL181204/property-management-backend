@@ -8,5 +8,6 @@ public class CreateUserRequest {
     private String password;
     private String role;
     private String status;
+    private Boolean canEditPrice;
     private UUID organizationId;
 }

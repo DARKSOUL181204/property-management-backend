@@ -1,17 +1,17 @@
 package com.example.propertymanagement.service.impl;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.propertymanagement.dto.PropertyDto;
 import com.example.propertymanagement.exception.ResourceNotFoundException;
 import com.example.propertymanagement.model.Property;
 import com.example.propertymanagement.repository.PropertyRepository;
 import com.example.propertymanagement.service.PropertyService;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class PropertyServiceImpl implements PropertyService {
@@ -53,7 +53,7 @@ public class PropertyServiceImpl implements PropertyService {
         // ModelMapper can be tricky with updates, but we'll map DTO to Entity for simplicity
         modelMapper.map(propertyDto, property);
         // We ensure ID is preserved
-        // Note: For full robustness, individual fields should be set
+        property.setPropertyId(id);
         
         Property updatedProperty = propertyRepository.save(property);
         return modelMapper.map(updatedProperty, PropertyDto.class);

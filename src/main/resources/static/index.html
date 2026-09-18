@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <main class="shell">
+        <section id="authView" class="auth-layout">
+            <div class="brand-panel">
+                <div class="brand-mark">PM</div>
+                <p class="eyebrow">PROPERTY OPERATIONS</p>
+                <h1>Make every address<br><em>count.</em></h1>
+                <p class="lede">A calmer command center for the places, people, and decisions behind your portfolio.</p>
+                <div class="signal"><span class="signal-dot"></span><span>Workspace systems online</span></div>
+            </div>
+            <div class="auth-card">
+                <div class="auth-heading">
+                    <p class="eyebrow">WELCOME BACK</p>
+                    <h2>Sign in to your workspace</h2>
+                    <p>Manage your portfolio from one focused view.</p>
+                </div>
+                <form id="loginForm" class="form-stack">
+                    <label>Email<input name="email" type="email" autocomplete="email" placeholder="you@company.com"
+                            required></label>
+                    <label>Password<input name="password" type="password" autocomplete="current-password"
+                            placeholder="Your password" required></label>
+                    <button class="button primary" type="submit">Enter workspace <span>↗</span></button>
+                </form>
+                <button id="showRegister" class="text-button" type="button">Need an account? Create one</button>
+                <form id="registerForm" class="form-stack hidden">
+                    <label>Name<input name="name" type="text" placeholder="Your name" required></label>
+                    <label>Email<input name="email" type="email" placeholder="you@company.com" required></label>
+                    <label>Password<input name="password" type="password" placeholder="At least 8 characters"
+                            minlength="8" required></label>
+                    <button class="button primary" type="submit">Create workspace <span>↗</span></button>
+                </form>
+                <p id="authMessage" class="message" role="status"></p>
+            </div>
+        </section>
+
+        <section id="appView" class="app-layout hidden">
+            <header class="topbar">
+                <div class="brand-lockup">
+                    <div class="brand-mark small">PM</div><span>Property Management</span>
+                </div>
+                <div class="top-actions"><span id="userEmail" class="user-email"></span><button id="logoutButton"
+                        class="ghost-button" type="button">Sign out</button></div>
+            </header>
+            <div class="workspace">
+                <aside class="sidebar">
+                    <p class="eyebrow">WORKSPACE</p>
+                    <nav><button class="nav-item active" type="button"><span
+                                class="nav-icon">⌂</span>Portfolio</button><button class="nav-item" type="button"
+                            disabled><span class="nav-icon">◫</span>Leases <small>soon</small></button><button
+                            class="nav-item" type="button" disabled><span class="nav-icon">◌</span>Maintenance
+                            <small>soon</small></button></nav>
+                    <div class="sidebar-note"><span class="signal-dot"></span>
+                        <p><strong>Live database</strong><br>Connected to your workspace</p>
+                    </div>
+                </aside>
+                <div class="content">
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">PORTFOLIO / OVERVIEW</p>
+                            <h1>Your properties</h1>
+                            <p class="subhead">A quick read on the places you look after.</p>
+                        </div><button id="newPropertyButton" class="button primary" type="button"><span
+                                class="plus">+</span> Add property</button>
+                    </div>
+                    <div id="dashboardMessage" class="message" role="status"></div>
+                    <div class="metrics">
+                        <div class="metric"><span class="metric-label">TOTAL PROPERTIES</span><strong
+                                id="propertyCount">0</strong><span class="metric-foot">in your portfolio</span></div>
+                        <div class="metric accent"><span class="metric-label">TOTAL UNITS</span><strong
+                                id="unitCount">0</strong><span class="metric-foot">across all properties</span></div>
+                        <div class="metric"><span class="metric-label">ACTIVE STATUS</span><strong
+                                id="activeCount">0</strong><span class="metric-foot">properties operational</span></div>
+                    </div>
+                    <div class="section-heading">
+                        <h2>Property register</h2><span id="lastUpdated" class="muted">Awaiting data</span>
+                    </div>
+                    <div id="propertyList" class="property-list">
+                        <div class="empty-state"><span class="empty-symbol">+</span>
+                            <h3>Your portfolio starts here</h3>
+                            <p>Add your first property to begin tracking the details that matter.</p><button
+                                class="text-button" type="button" id="emptyAddButton">Add a property</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <dialog id="propertyDialog" class="property-dialog">
+        <form id="propertyForm" method="dialog">
+            <div class="dialog-heading">
+                <div>
+                    <p class="eyebrow">NEW RECORD</p>
+                    <h2>Add property</h2>
+                </div><button id="closeDialog" class="close-button" type="button" aria-label="Close">×</button>
+            </div><label>Property name<input name="name" type="text" placeholder="e.g. Cedar House" required></label>
+            <div class="form-row"><label>Type<select name="propertyType">
+                        <option>RESIDENTIAL</option>
+                        <option>COMMERCIAL</option>
+                        <option>MIXED_USE</option>
+                    </select></label><label>Total units<input name="totalUnits" type="number" min="0" value="1"
+                        required></label></div><label>Status<select name="status">
+                    <option>ACTIVE</option>
+                    <option>INACTIVE</option>
+                </select></label>
+            <p id="propertyMessage" class="message" role="status"></p><button class="button primary" type="submit">Save
+                property <span>↗</span></button>
+        </form>
+    </dialog>
+    <script src="/app.js"></script>
+</body>
+
+</html>
