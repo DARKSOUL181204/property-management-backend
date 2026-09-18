@@ -12,6 +12,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -56,9 +59,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> modelMapper.map(user, UserResponse.class))
-                .toList();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            if (user != null && ("MANAGER".equals(user.getRole()) || "EMPLOYEE".equals(user.getRole())) && user.getOrganization() != null) {
+                return userRepository.findAll().stream()
+                        .filter(e -> e.getOrganization() != null && e.getOrganization().getOrganizationId().equals(user.getOrganization().getOrganizationId()))
+                        .map(e -> modelMapper.map(e, UserResponse.class))
+                        .toList();
+            }
+        }
+        return userRepository.findAll().stream().map(e -> modelMapper.map(e, UserResponse.class)).toList();
     }
 
     @Override

@@ -40,9 +40,11 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
         public List<PropertyDto> getAllPropertys() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("GET ALL PROPERTIES AUTH: " + (auth != null ? auth.getName() : "NULL"));
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
             User user = userRepository.findByEmail(auth.getName()).orElse(null);
             if (user != null) {
+                System.out.println("USER ROLE IS: " + user.getRole() + ", ORG: " + (user.getOrganization() != null ? user.getOrganization().getOrganizationId() : "NULL"));
                 if ("MANAGER".equals(user.getRole()) || "EMPLOYEE".equals(user.getRole())) {
                     if (user.getOrganization() != null) {
                         return propertyRepository.findAll().stream()

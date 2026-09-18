@@ -9,6 +9,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.propertymanagement.model.User;
+import com.example.propertymanagement.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,7 +26,10 @@ public class RentalTenantServiceImpl implements RentalTenantService {
     @Autowired
     private ModelMapper modelMapper;
 
-    @Override
+    
+    @Autowired
+    private UserRepository userRepository;
+@Override
     public RentalTenantDto createRentalTenant(RentalTenantDto rentalTenantDto) {
         RentalTenant rentalTenant = modelMapper.map(rentalTenantDto, RentalTenant.class);
         RentalTenant savedRentalTenant = rentalTenantRepository.save(rentalTenant);
@@ -31,9 +38,17 @@ public class RentalTenantServiceImpl implements RentalTenantService {
 
     @Override
     public List<RentalTenantDto> getAllRentalTenants() {
-        List<RentalTenant> rentalTenants = rentalTenantRepository.findAll();
-        return rentalTenants.stream().map(rentalTenant -> modelMapper.map(rentalTenant, RentalTenantDto.class))
-                .toList();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            if (user != null && ("MANAGER".equals(user.getRole()) || "EMPLOYEE".equals(user.getRole())) && user.getOrganization() != null) {
+                return rentalTenantRepository.findAll().stream()
+                        .filter(e -> e.getOrganization() != null && e.getOrganization().getOrganizationId().equals(user.getOrganization().getOrganizationId()))
+                        .map(e -> modelMapper.map(e, RentalTenantDto.class))
+                        .toList();
+            }
+        }
+        return rentalTenantRepository.findAll().stream().map(e -> modelMapper.map(e, RentalTenantDto.class)).toList();
     }
 
     @Override

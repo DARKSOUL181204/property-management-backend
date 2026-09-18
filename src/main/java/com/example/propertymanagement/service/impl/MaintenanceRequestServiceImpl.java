@@ -9,6 +9,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.propertymanagement.model.User;
+import com.example.propertymanagement.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,7 +26,10 @@ public class MaintenanceRequestServiceImpl implements MaintenanceRequestService 
     @Autowired
     private ModelMapper modelMapper;
 
-    @Override
+    
+    @Autowired
+    private UserRepository userRepository;
+@Override
     public MaintenanceRequestDto createMaintenanceRequest(MaintenanceRequestDto maintenanceRequestDto) {
         MaintenanceRequest maintenanceRequest = modelMapper.map(maintenanceRequestDto, MaintenanceRequest.class);
         MaintenanceRequest savedMaintenanceRequest = maintenanceRequestRepository.save(maintenanceRequest);
@@ -31,9 +38,17 @@ public class MaintenanceRequestServiceImpl implements MaintenanceRequestService 
 
     @Override
     public List<MaintenanceRequestDto> getAllMaintenanceRequests() {
-        List<MaintenanceRequest> maintenanceRequests = maintenanceRequestRepository.findAll();
-        return maintenanceRequests.stream().map(maintenanceRequest -> modelMapper.map(maintenanceRequest, MaintenanceRequestDto.class))
-                .toList();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            if (user != null && ("MANAGER".equals(user.getRole()) || "EMPLOYEE".equals(user.getRole())) && user.getOrganization() != null) {
+                return maintenanceRequestRepository.findAll().stream()
+                        .filter(e -> e.getOrganization() != null && e.getOrganization().getOrganizationId().equals(user.getOrganization().getOrganizationId()))
+                        .map(e -> modelMapper.map(e, MaintenanceRequestDto.class))
+                        .toList();
+            }
+        }
+        return maintenanceRequestRepository.findAll().stream().map(e -> modelMapper.map(e, MaintenanceRequestDto.class)).toList();
     }
 
     @Override
