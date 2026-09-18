@@ -42,6 +42,7 @@ public class Property {
     private String status;
     private String transactionType = "BUY";
     private Double maintenanceFee = 5000.0;
+    private java.math.BigDecimal buildCost;
     private String healthState = "GOOD";
 
     @ManyToOne(fetch = FetchType.LAZY)

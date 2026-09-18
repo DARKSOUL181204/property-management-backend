@@ -9,4 +9,6 @@ public class ProfitabilityAnalysisResponse {
     private BigDecimal totalExpenses;
     private BigDecimal netProfit;
     private double profitMargin;
+    private java.math.BigDecimal buildCost;
+    private Double roiPercentage;
 }
