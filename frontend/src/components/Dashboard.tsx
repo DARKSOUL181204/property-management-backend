@@ -97,6 +97,7 @@ const expenseData = Object.entries(analytics.expenses.expensesByCategory).map(([
   ];
   
   const financialData = [
+    { name: 'Initial Investment', value: analytics.profitability.buildCost || 0, fill: '#8b5cf6' },
     { name: 'Total Revenue', value: analytics.profitability.totalRevenue, fill: '#10b981' },
     { name: 'Total Expenses', value: analytics.profitability.totalExpenses, fill: '#ef4444' },
     { name: 'Net Profit', value: analytics.profitability.netProfit, fill: '#3b82f6' }

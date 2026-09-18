@@ -8,7 +8,7 @@ export default function StatCard({ title, value, subtitle, icon: Icon, colorClas
           <Icon size={20} />
         </div>
       </div>
-      <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{value}</p>
+      <p className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate" title={value}>{value}</p>
       {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
     </motion.div>
   );
