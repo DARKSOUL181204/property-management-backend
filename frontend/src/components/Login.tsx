@@ -27,8 +27,10 @@ export default function Login() {
       const decoded: any = jwtDecode(token);
       const role = decoded.role || "USER";
 
-      if (role === "ADMIN" || role === "MANAGER") {
+      if (role === "ADMIN" || role === "MANAGER" || role === "EMPLOYEE") {
         navigate("/dashboard");
+      } else if (role === "USER") {
+        navigate("/portal");
       } else {
         navigate("/");
       }
