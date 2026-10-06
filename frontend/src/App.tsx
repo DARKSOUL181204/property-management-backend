@@ -9,10 +9,39 @@ import PublicPortal from "./components/PublicPortal";
 import PublicPropertyDetails from "./components/PublicPropertyDetails";
 import Tenants from "./components/Tenants";
 import TenantPortal from "./components/TenantPortal";
+import { jwtDecode } from "jwt-decode";
 
-function PrivateRoute({ children }: any) {
+type TokenClaims = {
+  role?: string;
+  exp?: number;
+};
+
+const STAFF_ROLES = ["ADMIN", "MANAGER", "EMPLOYEE"];
+
+function getTokenRole(): string | null {
   const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" />;
+  if (!token) return null;
+
+  try {
+    const decoded: TokenClaims = jwtDecode(token);
+    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+      localStorage.removeItem("token");
+      return null;
+    }
+    return decoded.role || "USER";
+  } catch {
+    localStorage.removeItem("token");
+    return null;
+  }
+}
+
+function PrivateRoute({ children, allowedRoles }: any) {
+  const role = getTokenRole();
+  if (!role) return <Navigate to="/login" replace />;
+  if (!allowedRoles || allowedRoles.includes(role)) return children;
+
+  if (role === "USER") return <Navigate to="/portal" replace />;
+  return <Navigate to="/dashboard" replace />;
 }
 
 export default function App() {
@@ -30,7 +59,7 @@ export default function App() {
         <Route
           path="/"
           element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={STAFF_ROLES}>
               <Layout />
             </PrivateRoute>
           }
@@ -40,12 +69,19 @@ export default function App() {
           <Route path="properties" element={<Properties />} />
           <Route path="properties/:propertyId" element={<PropertyDetails />} />
           <Route path="tenants" element={<Tenants />} />
-          <Route path="employees" element={<Employees />} />
+          <Route
+            path="employees"
+            element={
+              <PrivateRoute allowedRoles={["ADMIN"]}>
+                <Employees />
+              </PrivateRoute>
+            }
+          />
         </Route>
         <Route
           path="/portal"
           element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={["USER"]}>
               <TenantPortal />
             </PrivateRoute>
           }

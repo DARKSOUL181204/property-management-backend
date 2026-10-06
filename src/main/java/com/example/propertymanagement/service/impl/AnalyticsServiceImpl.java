@@ -1,16 +1,21 @@
 package com.example.propertymanagement.service.impl;
 
 import com.example.propertymanagement.model.*;
+import com.example.propertymanagement.exception.ResourceNotFoundException;
 import com.example.propertymanagement.repository.*;
 import com.example.propertymanagement.service.AnalyticsService;
 import com.example.propertymanagement.payload.response.analytics.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,8 +37,12 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
     public OccupancyAnalysisResponse getOccupancyAnalysis(UUID propertyId) {
+        requireAuthorizedProperty(propertyId);
         List<Unit> units = unitRepository.findByPropertyPropertyId(propertyId);
         int total = units.size();
         int occupied = (int) units.stream().filter(u -> "OCCUPIED".equalsIgnoreCase(u.getStatus())).count();
@@ -49,6 +58,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public RentCollectionAnalysisResponse getRentCollectionAnalysis(UUID propertyId) {
+        requireAuthorizedProperty(propertyId);
         List<Unit> units = unitRepository.findByPropertyPropertyId(propertyId);
         List<Lease> leases = units.stream()
                 .flatMap(u -> leaseRepository.findAll().stream().filter(l -> l.getUnit() != null && l.getUnit().getUnitId().equals(u.getUnitId())))
@@ -80,6 +90,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public ProfitabilityAnalysisResponse getProfitabilityAnalysis(UUID propertyId) {
+        requireAuthorizedProperty(propertyId);
         RentCollectionAnalysisResponse rent = getRentCollectionAnalysis(propertyId);
         ExpenseAnalysisResponse expense = getExpenseAnalysis(propertyId);
 
@@ -110,6 +121,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public ExpenseAnalysisResponse getExpenseAnalysis(UUID propertyId) {
+        requireAuthorizedProperty(propertyId);
         List<Expense> expenses = expenseRepository.findByPropertyPropertyId(propertyId);
         
         Map<String, BigDecimal> byCategory = expenses.stream()
@@ -132,6 +144,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public MaintenanceAnalysisResponse getMaintenanceAnalysis(UUID propertyId) {
+        requireAuthorizedProperty(propertyId);
         List<MaintenanceRequest> requests = maintenanceRepository.findByPropertyPropertyId(propertyId);
         
         int open = (int) requests.stream().filter(r -> "OPEN".equalsIgnoreCase(r.getStatus())).count();
@@ -149,6 +162,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public PropertyPerformanceResponse getPropertyPerformance(UUID propertyId) {
+        requireAuthorizedProperty(propertyId);
         PropertyPerformanceResponse response = new PropertyPerformanceResponse();
         response.setPropertyId(propertyId);
         response.setOccupancy(getOccupancyAnalysis(propertyId));
@@ -178,5 +192,32 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         }
         
         return response;
+    }
+
+    private void requireAuthorizedProperty(UUID propertyId) {
+        User currentUser = getCurrentUserOrThrow();
+        if (!isStaffRole(currentUser)) {
+            throw new AccessDeniedException("You are not authorized to access analytics");
+        }
+        if (currentUser.getOrganization() == null) {
+            throw new AccessDeniedException("No organization assigned to user");
+        }
+
+        UUID organizationId = currentUser.getOrganization().getOrganizationId();
+        propertyRepository.findByPropertyIdAndOrganizationOrganizationId(propertyId, organizationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property", "id", propertyId));
+    }
+
+    private User getCurrentUserOrThrow() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new AccessDeniedException("Authentication required");
+        }
+        Optional<User> user = userRepository.findByEmail(authentication.getName());
+        return user.orElseThrow(() -> new AccessDeniedException("Authenticated user not found"));
+    }
+
+    private boolean isStaffRole(User user) {
+        return user != null && ("ADMIN".equals(user.getRole()) || "MANAGER".equals(user.getRole()) || "EMPLOYEE".equals(user.getRole()));
     }
 }
