@@ -326,7 +326,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#374151" opacity={0.2} />
               <XAxis type="number" tick={{ fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={(val) => `₹${val.toLocaleString()}`} />
               <YAxis dataKey="name" type="category" tick={{ fill: '#6b7280', fontWeight: 'bold' }} axisLine={false} tickLine={false} width={100} />
-              <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} formatter={(val: number) => [`₹${val.toLocaleString()}`, 'Amount (Per Unit)']} />
+              <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} formatter={(val: any) => [`₹${Number(val || 0).toLocaleString()}`, 'Amount (Per Unit)']} />
               <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
                 {financialData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} />
